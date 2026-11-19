@@ -1,3 +1,11 @@
+> **⚠️ Unofficial Port — Minecraft 26.3 (Fabric)**
+> This branch (`26.3-fabric`) is an unofficial community port of [Pocky-l/handson-delight](https://github.com/Pocky-l/handson-delight) to **Minecraft 26.3 (Fabric)**, created with the assistance of an AI coding agent and verified on both client and dedicated server (`runServer`).
+> - **Requirements:** Minecraft `26.3`, Fabric Loader `0.19.5+`, Fabric API `0.166.2+26.3`, [Diegesis 26.3 (Fabric fork)](https://github.com/rubenbarreroa/diegesis/tree/26.3-fabric), and *Farmer's Delight Refabricated 26.3* (JDK 25 required to build).
+> - **Bug reports:** **Please do NOT report issues with this port to Pocky's Kitchen Discord or the upstream repository.** Open an issue in [this fork](https://github.com/rubenbarreroa/handson-delight/issues) instead.
+> - **License:** Original MIT License preserved. Provided as-is.
+
+---
+
 <h1 align="center">Hands-On Delight</h1>
 
 <p align="center">
