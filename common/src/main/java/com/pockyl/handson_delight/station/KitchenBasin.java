@@ -1,7 +1,7 @@
 package com.pockyl.handson_delight.station;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -31,7 +31,7 @@ import java.util.WeakHashMap;
 public final class KitchenBasin {
     private static final String ENTITY = "com.mao.barbequesdelight.content.block.BasinBlockEntity";
     public static final int PLACES = 2;
-    public static final ResourceLocation SKEWERING = ResourceLocation.fromNamespaceAndPath(KitchenGrill.MOD_ID, "skewering");
+    public static final Identifier SKEWERING = Identifier.fromNamespaceAndPath(KitchenGrill.MOD_ID, "skewering");
 
     /**
      * The recipes per recipe manager (the client's and the server's of a single-player game are two), read again when its map of
@@ -139,7 +139,7 @@ public final class KitchenBasin {
     }
 
     /** A skewering recipe: the tool (a stick), the food and how many, the side and how many (none for some), what comes out. */
-    public record Skewering(ResourceLocation id, Ingredient tool, Ingredient food, int foodCount, Ingredient side, int sideCount,
+    public record Skewering(Identifier id, Ingredient tool, Ingredient food, int foodCount, Ingredient side, int sideCount,
             ItemStack result) {
         /** Whether it takes no side. */
         public boolean plain() {

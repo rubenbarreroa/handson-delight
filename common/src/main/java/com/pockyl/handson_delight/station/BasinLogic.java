@@ -1,7 +1,7 @@
 package com.pockyl.handson_delight.station;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -190,7 +190,7 @@ public final class BasinLogic implements StationLogic {
      * inventory, enough for one skewer or with {@code all} for as many as there is; then a stick from the inventory skewers them.
      */
     private void fill(StationContext station, Player player, String id, boolean all) {
-        ResourceLocation key = ResourceLocation.tryParse(id);
+        Identifier key = Identifier.tryParse(id);
         KitchenBasin.Skewering recipe = KitchenBasin.recipes(station.level()).stream().filter(it -> it.id().equals(key)).findFirst()
                 .orElse(null);
         if (recipe == null) {

@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -284,7 +284,7 @@ public final class GrillBehavior implements StationBehavior {
         String path = BuiltInRegistries.ITEM.getKey(seasoning.getItem()).getPath();
         String other = sauce ? path.equals("barbeque_sauce") ? "buffalo_sauce" : "barbeque_sauce"
                 : path.equals("cumin_powder") ? "chili_powder" : "cumin_powder";
-        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(KitchenGrill.MOD_ID, other));
+        return BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath(KitchenGrill.MOD_ID, other));
     }
 
     /** Barbeque's Delight's sauces (honey mustard, buffalo, barbeque): dabbed on, not shaken. */
@@ -592,7 +592,7 @@ public final class GrillBehavior implements StationBehavior {
     }
 
     @Override
-    public void onEffect(StationView view, ResourceLocation effect, String node, CompoundTag data) {
+    public void onEffect(StationView view, Identifier effect, String node, CompoundTag data) {
         int place = data.getInt(GrillStation.PLACE);
         boolean known = place >= 0 && place < KitchenGrill.PLACES;
         if (GrillStation.EFFECT_TURNED.equals(effect)) {

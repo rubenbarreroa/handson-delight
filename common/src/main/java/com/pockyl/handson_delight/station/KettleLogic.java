@@ -2,7 +2,7 @@ package com.pockyl.handson_delight.station;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +35,7 @@ public final class KettleLogic implements StationLogic {
     private final KitchenKettle kettle;
     private final SlotStorage ingredients;
     /** The recipe the cook last picked in the book: the kettle's choice while its leaves make it, until the kettle is empty. */
-    private ResourceLocation wanted;
+    private Identifier wanted;
 
     public KettleLogic(StationContext station) {
         kettle = (KitchenKettle) station.blockEntity();
@@ -169,7 +169,7 @@ public final class KettleLogic implements StationLogic {
                         data.contains(KettleStation.FROM) ? data.getInt(KettleStation.FROM) : -1);
             }
         } else if (KettleStation.ACTION_FILL.equals(action)) {
-            ResourceLocation id = ResourceLocation.tryParse(data.getString(KettleStation.DISH));
+            Identifier id = Identifier.tryParse(data.getString(KettleStation.DISH));
             // A recipe picked in the book takes the lid off for its leaves to go in.
             kettle.handson$setOpen(true);
             kettle.handson$recipes().stream().filter(recipe -> recipe.id().equals(id)).findFirst()
@@ -324,7 +324,7 @@ public final class KettleLogic implements StationLogic {
         state.setData(own);
         int capacity = Math.max(1, kettle.handson$capacity());
         // The tank holds the kettle's own liquid, so that it looks like what it is (KettleLiquids on the client).
-        ResourceLocation liquid = kettle.handson$fluid() == Fluids.EMPTY ? HandsOnDelight.id("drink") : BuiltInRegistries.FLUID.getKey(kettle.handson$fluid());
+        Identifier liquid = kettle.handson$fluid() == Fluids.EMPTY ? HandsOnDelight.id("drink") : BuiltInRegistries.FLUID.getKey(kettle.handson$fluid());
         state.setTank(KettleStation.DRINK, TankContents.of(liquid, Math.round(100.0F * kettle.handson$amount() / capacity)));
     }
 }

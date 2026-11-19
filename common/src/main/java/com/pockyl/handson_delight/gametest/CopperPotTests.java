@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -24,7 +24,7 @@ import com.pockyl.handson_delight.station.PotLogic;
  * copper cups, two to a serving. Each test passes at once where Miner's Delight is not there.
  */
 public final class CopperPotTests {
-    private static final ResourceLocation CUP = ResourceLocation.fromNamespaceAndPath(FarmersDelightContent.MINERS_DELIGHT, "copper_cup");
+    private static final Identifier CUP = Identifier.fromNamespaceAndPath(FarmersDelightContent.MINERS_DELIGHT, "copper_cup");
 
     private CopperPotTests() {
     }

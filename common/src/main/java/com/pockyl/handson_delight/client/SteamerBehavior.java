@@ -9,7 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -108,7 +108,7 @@ public final class SteamerBehavior implements StationBehavior {
     /** The badge, as the pots': plate, a flame and a drop over the icon of what steams, the bar and the seconds left under it. */
     private static final String[] BADGE_PARTS = {"badge", "dial_track", "dial", "flame", "flame_lit", "drop", "drop_lit", "preview"};
     @SuppressWarnings("removal")
-    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "block/white_concrete");
+    private static final Identifier BADGE_TEXTURE = Identifier.fromNamespaceAndPath("minecraft", "block/white_concrete");
     private static final int PLATE_COLOR = 0x8C1E140C;
     private static final int DIAL_COLOR = 0xFFFFCB6B;
     private static final int TRACK_COLOR = 0x50FFF2DC;
@@ -848,7 +848,7 @@ public final class SteamerBehavior implements StationBehavior {
     }
 
     @Override
-    public void onEffect(StationView view, ResourceLocation effect, String node, CompoundTag data) {
+    public void onEffect(StationView view, Identifier effect, String node, CompoundTag data) {
         if (SteamerStation.EFFECT_IN.equals(effect)) {
             in(view, data.getList(SteamerStation.LAID, Tag.TAG_COMPOUND));
         } else if (SteamerStation.EFFECT_TAKEN.equals(effect)) {

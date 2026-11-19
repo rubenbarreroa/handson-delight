@@ -2,7 +2,7 @@ package com.pockyl.handson_delight.client;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -22,7 +22,7 @@ final class YoukaiPotBook implements RecipeBook.Source {
     private final String memory;
 
     /** {@code station}: the pot's station type, under whose name the book remembers its place. */
-    YoukaiPotBook(ResourceLocation station) {
+    YoukaiPotBook(Identifier station) {
         this.memory = station.toString();
     }
 

@@ -1,7 +1,7 @@
 package com.pockyl.handson_delight.station;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,7 +27,7 @@ import java.util.WeakHashMap;
  * libraries nested in its jar, so they are read by name.
  */
 public final class YoukaiPotDishes {
-    private static final ResourceLocation COOKING = ResourceLocation.tryBuild(KitchenYoukaiPot.MOD_ID, "pot_cooking");
+    private static final Identifier COOKING = Identifier.tryBuild(KitchenYoukaiPot.MOD_ID, "pot_cooking");
     /**
      * Per recipe manager: the client's and the server's of a single-player game are two. Read again when the manager's map of recipes
      * is a new one (a reload, the server's recipes reaching a client).

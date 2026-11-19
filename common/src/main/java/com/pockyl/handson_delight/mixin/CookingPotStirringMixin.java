@@ -1,9 +1,9 @@
 package com.pockyl.handson_delight.mixin;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
@@ -11,6 +11,8 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -134,18 +136,18 @@ abstract class CookingPotStirringMixin implements KitchenPot {
     @Override
     public ItemStack handson$cooked(CookingPotRecipe recipe) {
         Level level = handson$self().getLevel();
-        return level == null ? recipe.getResultItem(RegistryAccess.EMPTY)
+        return level == null ? recipe.result().create()
                 : Platform.INSTANCE.cooked(level, recipe, KitchenPot.ingredients(this));
     }
 
     @Override
     public ItemStack handson$resultOf(CookingPotRecipe recipe, RegistryAccess access) {
-        return recipe.getResultItem(access);
+        return recipe.result().create();
     }
 
     @Override
     public ItemStack handson$containerOf(CookingPotRecipe recipe, RegistryAccess access) {
-        return recipe.getOutputContainer();
+        return com.pockyl.handson_delight.Nbt26.potContainer(recipe);
     }
 
     @Override
@@ -178,8 +180,11 @@ abstract class CookingPotStirringMixin implements KitchenPot {
         return handson$self();
     }
 
+    @Unique
+    private static final String HANDSON_COOKING = "handson_delight:cooking";
+
     @Inject(method = "cookingTick", at = @At("HEAD"))
-    private static void handson$seeWhoFeedsIt(Level level, BlockPos pos, BlockState state, CookingPotBlockEntity pot, CallbackInfo callback) {
+    private static void handson$seeWhoFeedsIt(ServerLevel level, BlockPos pos, BlockState state, CookingPotBlockEntity pot, CallbackInfo callback) {
         ((KitchenPot) pot).handson$cooking().watchFood(level.getGameTime());
     }
 
@@ -191,13 +196,17 @@ abstract class CookingPotStirringMixin implements KitchenPot {
     }
 
     @Inject(method = "saveAdditional", at = @At("TAIL"), remap = true)
-    private void handson$save(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo callback) {
+    private void handson$save(ValueOutput output, CallbackInfo callback) {
+        CompoundTag tag = new CompoundTag();
         handson$cooking.save(tag);
+        if (!tag.isEmpty()) {
+            output.store(HANDSON_COOKING, CompoundTag.CODEC, tag);
+        }
     }
 
     @Inject(method = "loadAdditional", at = @At("TAIL"), remap = true)
-    private void handson$load(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo callback) {
-        handson$cooking.load(tag);
+    private void handson$load(ValueInput input, CallbackInfo callback) {
+        handson$cooking.load(input.read(HANDSON_COOKING, CompoundTag.CODEC).orElseGet(CompoundTag::new));
     }
 
     @Inject(method = "processCooking", at = @At("HEAD"), cancellable = true)
@@ -218,7 +227,7 @@ abstract class CookingPotStirringMixin implements KitchenPot {
     @Inject(method = "cookingTick", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lvectorwing/farmersdelight/common/block/entity/"
             + "CookingPotBlockEntity;processCooking(Lnet/minecraft/world/item/crafting/RecipeHolder;"
             + "Lvectorwing/farmersdelight/common/block/entity/CookingPotBlockEntity;)Z"))
-    private static void handson$afterTheStep(Level level, BlockPos pos, BlockState state, CookingPotBlockEntity pot, CallbackInfo callback) {
+    private static void handson$afterTheStep(ServerLevel level, BlockPos pos, BlockState state, CookingPotBlockEntity pot, CallbackInfo callback) {
         ((KitchenPot) pot).handson$cooking().afterCooking();
     }
 }

@@ -9,6 +9,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
+import it.unimi.dsi.fastutil.ints.IntImmutableList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.stream.IntStream;
 import vectorwing.farmersdelight.common.block.entity.CookingPotBlockEntity;
 import vectorwing.farmersdelight.common.block.entity.CuttingBoardBlockEntity;
 import vectorwing.farmersdelight.common.block.entity.AbstractStoveBlockEntity;
@@ -38,19 +41,27 @@ public final class FabricPlatform implements Platform {
         pot.getInventory().setStackInSlot(slot, stack);
     }
 
+    private static final IntList INPUT_SLOTS =
+            IntImmutableList.of(IntStream.range(0, CookingPotBlockEntity.MEAL_DISPLAY_SLOT).toArray());
+
     @Override
     public Optional<RecipeHolder<CookingPotRecipe>> findRecipe(Level level, List<ItemStack> items) {
-        return level.getRecipeManager().getRecipeFor(ModRecipeTypes.COOKING.get(), new RecipeWrapper(slots(items)), level);
+        return com.pockyl.handson_delight.Nbt26.getRecipeFor(level, ModRecipeTypes.COOKING.get(), new RecipeWrapper(slots(items)));
     }
 
     @Override
     public ItemStack cooked(Level level, CookingPotRecipe recipe, List<ItemStack> items) {
-        return recipe.assemble(new RecipeWrapper(slots(items)), level.registryAccess());
+        return recipe.assemble(new RecipeWrapper(slots(items)));
     }
 
     /** The pot's slots holding copies of {@code items}, from the first one on. */
     private static ItemStackHandler slots(List<ItemStack> items) {
-        ItemStackHandler slots = new ItemStackHandler(CookingPotBlockEntity.INVENTORY_SIZE);
+        ItemStackHandler slots = new ItemStackHandler(CookingPotBlockEntity.INVENTORY_SIZE) {
+            @Override
+            public IntList getInputSlotIndexes() {
+                return INPUT_SLOTS;
+            }
+        };
         for (int i = 0; i < Math.min(items.size(), CookingPotBlockEntity.MEAL_DISPLAY_SLOT); i++) {
             slots.setStackInSlot(i, items.get(i).copy());
         }
@@ -59,7 +70,7 @@ public final class FabricPlatform implements Platform {
 
     @Override
     public List<RecipeHolder<CookingPotRecipe>> cookingRecipes(Level level) {
-        return level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.COOKING.get());
+        return com.pockyl.handson_delight.Nbt26.allRecipesFor(level, ModRecipeTypes.COOKING.get());
     }
 
     @Override

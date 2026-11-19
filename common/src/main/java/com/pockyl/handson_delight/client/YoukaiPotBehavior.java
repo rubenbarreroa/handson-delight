@@ -12,7 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -70,7 +70,7 @@ public final class YoukaiPotBehavior implements StationBehavior {
     private static final int FLIERS = 4;
     private static final String[] BADGE_PARTS = {"badge", "dial_track", "dial", "flame", "flame_lit", "preview"};
     @SuppressWarnings("removal")
-    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "block/white_concrete");
+    private static final Identifier BADGE_TEXTURE = Identifier.fromNamespaceAndPath("minecraft", "block/white_concrete");
     /** What comes in flies this long from the cook, the next one starting this much later; a pour holds the next back. */
     private static final float FLY_TIME = 0.32F;
     private static final float NEXT = 0.16F;
@@ -129,14 +129,14 @@ public final class YoukaiPotBehavior implements StationBehavior {
      * of its own texture. As the pot cooks one into the next, the colour moves across. It lies calm; heated it barely stirs, cooking
      * it bubbles a little at the walls.
      */
-    public static final ResourceLocation SOUP_LIQUID = HandsOnDelight.id("youkai_soup");
+    public static final Identifier SOUP_LIQUID = HandsOnDelight.id("youkai_soup");
     private static final String WATER = "water";
     private static final int WATER_ALPHA = 0x96;
     private static final int WATER_IN_IRON = 0x1E1E24;
     private static final int SOUP_ALPHA = 0xD8;
     private static final float WATER_MOTTLE = 0.1F;
     private static final float SOUP_MOTTLE = 0.2F;
-    private static final Map<ResourceLocation, Integer> SOUP_COLOURS = new HashMap<>();
+    private static final Map<Identifier, Integer> SOUP_COLOURS = new HashMap<>();
     /** The model the game falls back on when the soup colours were read: a new one after every resource reload. */
     private static BakedModel soupColoursReadWith;
 
@@ -368,7 +368,7 @@ public final class YoukaiPotBehavior implements StationBehavior {
     }
 
     @Override
-    public void onEffect(StationView view, ResourceLocation effect, String node, CompoundTag data) {
+    public void onEffect(StationView view, Identifier effect, String node, CompoundTag data) {
         if (YoukaiPotStation.EFFECT_IN.equals(effect)) {
             in(view, data.getList(YoukaiPotStation.STACKS, Tag.TAG_COMPOUND));
         } else if (YoukaiPotStation.EFFECT_BACK.equals(effect)) {
@@ -682,7 +682,7 @@ public final class YoukaiPotBehavior implements StationBehavior {
     }
 
     /** The colour of a soup base: water as the biome's, half darkened in iron; any other its texture's. */
-    private static int soupColour(StationView view, ResourceLocation soup) {
+    private static int soupColour(StationView view, Identifier soup) {
         if (WATER.equals(soup.getPath())) {
             return WATER_ALPHA << 24 | blend(BiomeColors.getAverageWaterColor(view.level(), view.pos()), WATER_IN_IRON, 0.5F) & 0xFFFFFF;
         }
@@ -696,7 +696,7 @@ public final class YoukaiPotBehavior implements StationBehavior {
     }
 
     /** The average colour of a texture of the block atlas, its first frame, as much as each pixel shows. */
-    private static int textureColour(ResourceLocation texture) {
+    private static int textureColour(Identifier texture) {
         SpriteContents contents = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture).contents();
         NativeImage image = ((SpriteContentsAccessor) contents).handson$originalImage();
         long red = 0;
@@ -790,7 +790,7 @@ public final class YoukaiPotBehavior implements StationBehavior {
 
     /** The dish the pot is cooking now, or nothing. */
     private static ItemStack cooking(KitchenYoukaiPot pot) {
-        ResourceLocation id = pot.handson$cooking();
+        Identifier id = pot.handson$cooking();
         if (id == null) {
             return ItemStack.EMPTY;
         }

@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -34,7 +34,7 @@ public final class YoukaiBoardTests {
 
     @SuppressWarnings("removal")
     private static Item feasts(String path) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(KitchenCuisine.MOD_ID, path));
+        return BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath(KitchenCuisine.MOD_ID, path));
     }
 
     @SuppressWarnings("removal")
@@ -264,8 +264,8 @@ public final class YoukaiBoardTests {
                     continue;
                 }
                 checked++;
-                List<ResourceLocation> stays = setup.board.handson$modelsOf(before);
-                List<ResourceLocation> shown = setup.board.handson$modelsOf(after);
+                List<Identifier> stays = setup.board.handson$modelsOf(before);
+                List<Identifier> shown = setup.board.handson$modelsOf(after);
                 if (stays == null || stays.isEmpty() || shown == null) {
                     wrong.add(dish.id().getPath() + " " + before + " -> " + after);
                 } else if (!shown.containsAll(stays)) {

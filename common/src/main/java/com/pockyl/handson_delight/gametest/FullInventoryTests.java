@@ -7,7 +7,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -94,7 +94,7 @@ public final class FullInventoryTests {
     }
 
     private static Item feasts(String path) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(KitchenCuisine.MOD_ID, path));
+        return BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath(KitchenCuisine.MOD_ID, path));
     }
 
     private static Item farmers(String path) {

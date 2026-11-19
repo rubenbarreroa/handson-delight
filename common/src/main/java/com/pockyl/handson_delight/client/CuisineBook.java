@@ -4,7 +4,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
@@ -71,7 +71,7 @@ final class CuisineBook implements RecipeBook.Source {
 
     @SuppressWarnings("removal")
     private static ItemStack icon(String path) {
-        return new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(KitchenCuisine.MOD_ID, path)));
+        return new ItemStack(BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath(KitchenCuisine.MOD_ID, path)));
     }
 
     @Override

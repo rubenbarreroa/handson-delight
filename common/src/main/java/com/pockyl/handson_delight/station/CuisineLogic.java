@@ -4,7 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -212,7 +212,7 @@ public final class CuisineLogic implements StationLogic {
      * last stays on the board.
      */
     private void fill(StationContext station, Player player, String id, boolean all) {
-        ResourceLocation key = ResourceLocation.tryParse(id);
+        Identifier key = Identifier.tryParse(id);
         KitchenCuisine.Dish dish = board.handson$dishes().stream().filter(it -> it.id().equals(key)).findFirst().orElse(null);
         if (dish == null) {
             return;

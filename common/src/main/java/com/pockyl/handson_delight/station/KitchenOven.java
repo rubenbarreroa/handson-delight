@@ -1,7 +1,7 @@
 package com.pockyl.handson_delight.station;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -33,8 +33,8 @@ public final class KitchenOven {
     public static final int GRID = 3;
     public static final int OUTPUT_SLOT = 9;
     /** Its two recipe types: a set of ingredients in any slots, and one laid out in the grid as at a crafting table. */
-    public static final ResourceLocation BAKING = ResourceLocation.fromNamespaceAndPath(MOD_ID, "baking");
-    public static final ResourceLocation BAKING_SHAPED = ResourceLocation.fromNamespaceAndPath(MOD_ID, "baking_shaped");
+    public static final Identifier BAKING = Identifier.fromNamespaceAndPath(MOD_ID, "baking");
+    public static final Identifier BAKING_SHAPED = Identifier.fromNamespaceAndPath(MOD_ID, "baking_shaped");
 
     private static Class<?> entityClass;
     private static Field progressField;
@@ -140,7 +140,7 @@ public final class KitchenOven {
      * A baking recipe: what goes in and what comes out after {@code ticks}. {@code width} 0: any slots; otherwise laid out
      * {@code width} x {@code height} as at a crafting table, {@code ingredients} row by row with empty places.
      */
-    public record Baking(ResourceLocation id, List<Ingredient> ingredients, int width, int height, ItemStack result, int ticks) {
+    public record Baking(Identifier id, List<Ingredient> ingredients, int width, int height, ItemStack result, int ticks) {
         public boolean isShaped() {
             return width > 0;
         }
@@ -157,7 +157,7 @@ public final class KitchenOven {
         List<Baking> loose = new ArrayList<>();
         for (RecipeHolder<?> holder : level.getRecipeManager().getRecipes()) {
             Recipe<?> recipe = holder.value();
-            ResourceLocation type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType());
+            Identifier type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType());
             boolean isShaped = BAKING_SHAPED.equals(type);
             if (!isShaped && !BAKING.equals(type)) {
                 continue;

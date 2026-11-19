@@ -1,6 +1,6 @@
 package com.pockyl.handson_delight.mixin;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,5 +12,5 @@ import java.util.Map;
 @Mixin(RecipeManager.class)
 public interface RecipeManagerAccessor {
     @Accessor("byName")
-    Map<ResourceLocation, RecipeHolder<?>> handson$byName();
+    Map<Identifier, RecipeHolder<?>> handson$byName();
 }

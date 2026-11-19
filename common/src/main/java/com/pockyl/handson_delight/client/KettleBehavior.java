@@ -8,7 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -55,9 +55,9 @@ public final class KettleBehavior implements StationBehavior {
     private static final String[] BADGE_PARTS = {"badge", "dial_track", "dial", "flame", "flame_lit", "preview"};
     private static final String[] SHOWN_IN_USE = {"kettle", "pot", "lid", "drink", "spout", "mouth"};
     @SuppressWarnings("removal")
-    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.withDefaultNamespace("block/white_concrete");
+    private static final Identifier BADGE_TEXTURE = Identifier.withDefaultNamespace("block/white_concrete");
     /** Farmer's Respite's own whistle for its kettle; this mod's for a kettle whose mod has none (Youkai's Feasts'). */
-    private static final SoundEvent WHISTLE = SoundEvent.createVariableRangeEvent(ResourceLocation.tryBuild(KettleStation.MOD_ID, "block.kettle.whistle"));
+    private static final SoundEvent WHISTLE = SoundEvent.createVariableRangeEvent(Identifier.tryBuild(KettleStation.MOD_ID, "block.kettle.whistle"));
     private static final SoundEvent OWN_WHISTLE = SoundEvent.createVariableRangeEvent(HandsOnDelight.id("kettle.whistle"));
 
     /**
@@ -419,11 +419,11 @@ public final class KettleBehavior implements StationBehavior {
     }
 
     @Override
-    public void onEffect(StationView view, ResourceLocation effect, String node, CompoundTag data) {
+    public void onEffect(StationView view, Identifier effect, String node, CompoundTag data) {
         Fluid fluid = fluidOf(data.getString(KettleStation.FLUID));
         KitchenKettle kettle = kettle(view);
         int color = 0xFF000000 | colourOf(view, kettle, fluid) & 0xFFFFFF;
-        Item vessel = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(data.getString(KettleStation.VESSEL)));
+        Item vessel = BuiltInRegistries.ITEM.get(Identifier.tryParse(data.getString(KettleStation.VESSEL)));
         if (KettleStation.EFFECT_POURED.equals(effect)) {
             poured(view, vessel, color);
         } else if (KettleStation.EFFECT_SERVED.equals(effect) && fluid != Fluids.EMPTY && kettle != null) {
@@ -454,7 +454,7 @@ public final class KettleBehavior implements StationBehavior {
     }
 
     private static Fluid fluidOf(String id) {
-        ResourceLocation key = ResourceLocation.tryParse(id);
+        Identifier key = Identifier.tryParse(id);
         return key == null || id.isEmpty() ? Fluids.EMPTY : BuiltInRegistries.FLUID.get(key);
     }
 

@@ -1,6 +1,6 @@
 package com.pockyl.handson_delight.station;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,14 +39,14 @@ public final class StationRecipes {
     public static final String ONE = "one";
 
     /** A recipe of a station as this reads it: its id and its ingredients, one slot each, with the station's own recipe object. */
-    public record Candidate<T>(T recipe, ResourceLocation id, List<Ingredient> ingredients) {
-        public static <T> Candidate<T> of(T recipe, ResourceLocation id, List<Ingredient> ingredients) {
+    public record Candidate<T>(T recipe, Identifier id, List<Ingredient> ingredients) {
+        public static <T> Candidate<T> of(T recipe, Identifier id, List<Ingredient> ingredients) {
             return new Candidate<>(recipe, id, ingredients.stream().filter(ingredient -> !ingredient.isEmpty()).toList());
         }
     }
 
     /** Wraps a station's recipes, in their order. */
-    public static <T> List<Candidate<T>> candidates(List<T> recipes, Function<T, ResourceLocation> id, Function<T, List<Ingredient>> ingredients) {
+    public static <T> List<Candidate<T>> candidates(List<T> recipes, Function<T, Identifier> id, Function<T, List<Ingredient>> ingredients) {
         List<Candidate<T>> out = new ArrayList<>(recipes.size());
         for (T recipe : recipes) {
             out.add(Candidate.of(recipe, id.apply(recipe), ingredients.apply(recipe)));
@@ -312,8 +312,8 @@ public final class StationRecipes {
      * can make is never chosen. With {@code overflow}, when no recipe holds all of it, the one that keeps the most is chosen and the
      * rest is for the cook.
      */
-    public static <T> Choice<T> choose(List<Candidate<T>> candidates, List<ItemStack> kinds, int slots, ResourceLocation wanted,
-            ResourceLocation found, boolean overflow) {
+    public static <T> Choice<T> choose(List<Candidate<T>> candidates, List<ItemStack> kinds, int slots, Identifier wanted,
+            Identifier found, boolean overflow) {
         List<Choice<T>> held = new ArrayList<>();
         List<Choice<T>> spilt = new ArrayList<>();
         for (Candidate<T> candidate : candidates) {
@@ -339,7 +339,7 @@ public final class StationRecipes {
     }
 
     /** Which of two recipes the food rather makes, below 0 for {@code first}: see {@link #choose}. */
-    private static <T> int rank(List<ItemStack> kinds, ResourceLocation found, Choice<T> first, Choice<T> second) {
+    private static <T> int rank(List<ItemStack> kinds, Identifier found, Choice<T> first, Choice<T> second) {
         int overFirst = leftOver(kinds, first.parts());
         int overSecond = leftOver(kinds, second.parts());
         if ((overFirst == 0) != (overSecond == 0)) {

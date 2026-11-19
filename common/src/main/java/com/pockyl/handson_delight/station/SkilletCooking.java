@@ -51,7 +51,7 @@ public final class SkilletCooking {
         if (level == null || stack.isEmpty()) {
             return Optional.empty();
         }
-        return level.getRecipeManager().getRecipeFor(RecipeType.CAMPFIRE_COOKING, new SingleRecipeInput(stack.copyWithCount(1)), level);
+        return com.pockyl.handson_delight.Nbt26.getRecipeFor(level, RecipeType.CAMPFIRE_COOKING, new SingleRecipeInput(stack.copyWithCount(1)));
     }
 
     /**
@@ -64,7 +64,7 @@ public final class SkilletCooking {
 
     /** What Farmer's Delight's skillet takes for one of {@code stack}, with the Fire Aspect it was placed with. */
     public static int skilletTicks(Level level, ItemStack stack, int fireAspect) {
-        return recipe(level, stack).map(recipe -> SkilletBlock.getSkilletCookingTime(recipe.getCookingTime(), fireAspect)).orElse(0);
+        return recipe(level, stack).map(recipe -> SkilletBlock.getSkilletCookingTime(recipe.cookingTime(), fireAspect)).orElse(0);
     }
 
     public static Frying frying(SkilletBlockEntity skillet) {
@@ -95,7 +95,7 @@ public final class SkilletCooking {
         Optional<CampfireCookingRecipe> recipe = recipe(level, stack);
         if (recipe.isPresent()) {
             frying.batch(Math.min(stack.getCount(), BATCH));
-            int ticks = SkilletBlock.getSkilletCookingTime(recipe.get().getCookingTime(), ((FryingPan) skillet).handson$fireAspect());
+            int ticks = SkilletBlock.getSkilletCookingTime(recipe.get().cookingTime(), ((FryingPan) skillet).handson$fireAspect());
             if (isOneSided(stack)) {
                 // An egg fries sunny side up: through from below in the time both sides take, no toss asked for.
                 frying.fryThrough(0.5F / sideTicks(ticks, frying.batch(), HandsOnConfig.skilletTime()));
@@ -210,7 +210,7 @@ public final class SkilletCooking {
         int cooked = had - skillet.getStoredStack().getCount();
         if (cooked < count) {
             // Farmer's Delight did not take all of it (another mod changed what its skillet cooks): the rest as the campfire makes it.
-            ItemStack one = recipe.assemble(new SingleRecipeInput(raw), level.registryAccess());
+            ItemStack one = recipe.assemble(new SingleRecipeInput(raw));
             made.add(one.copyWithCount(one.getCount() * (count - cooked)));
             ItemStack inPan = skillet.getStoredStack();
             Platform.INSTANCE.setItem(skillet, inPan.copyWithCount(Math.max(0, inPan.getCount() - (count - cooked))));
@@ -224,7 +224,7 @@ public final class SkilletCooking {
             Platform.INSTANCE.setItem(skillet, done.get(0));
             frying.serve();
             CompoundTag ready = new CompoundTag();
-            ready.put(SkilletStation.STACK, done.get(0).saveOptional(level.registryAccess()));
+            ready.put(SkilletStation.STACK, com.pockyl.handson_delight.Nbt26.saveOptional(done.get(0), level.registryAccess()));
             ready.putBoolean(SkilletStation.IN_PAN, true);
             station.ifPresent(at -> at.effect(SkilletStation.EFFECT_FRIED, "pan", ready));
             return;
@@ -240,12 +240,12 @@ public final class SkilletCooking {
         Optional<Player> cook = station.flatMap(at -> at.users().stream().<Player>map(player -> player)
                 .min((a, b) -> Boolean.compare(!a.getUUID().equals(frying.cook()), !b.getUUID().equals(frying.cook()))));
         CompoundTag data = new CompoundTag();
-        data.put(SkilletStation.STACK, done.get(0).saveOptional(level.registryAccess()));
+        data.put(SkilletStation.STACK, com.pockyl.handson_delight.Nbt26.saveOptional(done.get(0), level.registryAccess()));
         data.putBoolean(SkilletStation.TO_COOK, cook.isPresent());
         for (ItemStack each : done) {
             if (cook.isPresent()) {
                 if (!cook.get().getInventory().add(each)) {
-                    cook.get().drop(each, false);
+                    cook.get().drop(each, false, net.minecraft.util.Prediction.SERVER_ONLY);
                 }
             } else {
                 jumpOut(skillet, each);

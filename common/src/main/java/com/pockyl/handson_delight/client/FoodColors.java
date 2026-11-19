@@ -2,13 +2,14 @@ package com.pockyl.handson_delight.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import vectorwing.farmersdelight.common.crafting.CookingPotRecipe;
 
+import com.pockyl.handson_delight.Nbt26;
 import com.pockyl.handson_delight.mixin.SpriteContentsAccessor;
 import com.pockyl.handson_delight.platform.Platform;
 
@@ -27,7 +28,7 @@ final class FoodColors {
     private static final int HUES = 12;
     private static final Map<ItemVoxels.Look, Integer> MAIN = new HashMap<>();
     private static final Map<ItemVoxels.Look, Integer> BROTH = new HashMap<>();
-    private static BakedModel readWith;
+    private static BlockStateModelSet readWith;
     /** Where the bowl starts on a dish's icon, as a part of its height, when it is not drawn in a bowl's own colours. */
     private static final float BOWL_TOP = 0.6F;
     private static final float GREY = 0.14F;
@@ -46,11 +47,11 @@ final class FoodColors {
                 ? KitchenLooks.liquidColor(stack) & 0xFFFFFF : KitchenLooks.isCracked(stack) ? EGG : sample(stack));
     }
 
-    /** Resources were reloaded (the game's fallback model is a new one): the colours read so far may be of other textures. */
+    /** Resources were reloaded: the colours read so far may be of other textures. */
     private static void forgetOnReload() {
-        BakedModel missing = Minecraft.getInstance().getModelManager().getMissingModel();
-        if (missing != readWith) {
-            readWith = missing;
+        BlockStateModelSet current = Minecraft.getInstance().getModelManager().getBlockStateModelSet();
+        if (current != readWith) {
+            readWith = current;
             CACHE.clear();
             MAIN.clear();
             BROTH.clear();
@@ -66,13 +67,13 @@ final class FoodColors {
         long weight = 0;
         for (int y = 0; y < contents.height(); y++) {
             for (int x = 0; x < contents.width(); x++) {
-                int abgr = image.getPixelRGBA(x, y);
-                if ((abgr >>> 24) < 128) {
+                int argb = image.getPixel(x, y);
+                if ((argb >>> 24) < 128) {
                     continue;
                 }
-                int r = abgr & 0xFF;
-                int g = abgr >> 8 & 0xFF;
-                int b = abgr >> 16 & 0xFF;
+                int r = argb >> 16 & 0xFF;
+                int g = argb >> 8 & 0xFF;
+                int b = argb & 0xFF;
                 // Colourful pixels say more about food than its grey outline does.
                 int vivid = 1 + Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b));
                 red += (long) r * vivid;
@@ -111,11 +112,12 @@ final class FoodColors {
     private static ItemStack container(Level level, ItemStack meal) {
         for (RecipeHolder<CookingPotRecipe> holder : Platform.INSTANCE.cookingRecipes(level)) {
             CookingPotRecipe recipe = holder.value();
-            if (recipe.getResultItem(level.registryAccess()).is(meal.getItem()) && !recipe.getOutputContainer().isEmpty()) {
-                return recipe.getOutputContainer();
+            ItemStack cont = Nbt26.potContainer(recipe);
+            if (recipe.result().create().is(meal.getItem()) && !cont.isEmpty()) {
+                return cont;
             }
         }
-        return meal.getItem().hasCraftingRemainingItem() ? new ItemStack(meal.getItem().getCraftingRemainingItem()) : ItemStack.EMPTY;
+        return Nbt26.craftingRemainder(meal);
     }
 
     private static NativeImage image(ItemStack stack) {
@@ -123,10 +125,10 @@ final class FoodColors {
     }
 
     private static SpriteContents contents(ItemStack stack) {
-        return ItemVoxels.model(stack).getParticleIcon().contents();
+        return ItemVoxels.spriteOf(stack).contents();
     }
 
-    /** The colours of the visible pixels of an icon, as {@link NativeImage} keeps them without their alpha. */
+    /** The colours of the visible pixels of an icon, RGB without alpha. */
     private static Set<Integer> colours(ItemStack stack) {
         Set<Integer> colours = new HashSet<>();
         if (!stack.isEmpty()) {
@@ -134,9 +136,9 @@ final class FoodColors {
             NativeImage image = image(stack);
             for (int y = 0; y < contents.height(); y++) {
                 for (int x = 0; x < contents.width(); x++) {
-                    int abgr = image.getPixelRGBA(x, y);
-                    if ((abgr >>> 24) >= 128) {
-                        colours.add(abgr & 0xFFFFFF);
+                    int argb = image.getPixel(x, y);
+                    if ((argb >>> 24) >= 128) {
+                        colours.add(argb & 0xFFFFFF);
                     }
                 }
             }
@@ -149,8 +151,8 @@ final class FoodColors {
         NativeImage image = image(stack);
         for (int y = 0; y < contents.height(); y++) {
             for (int x = 0; x < contents.width(); x++) {
-                int abgr = image.getPixelRGBA(x, y);
-                if ((abgr >>> 24) >= 128 && colours.contains(abgr & 0xFFFFFF)) {
+                int argb = image.getPixel(x, y);
+                if ((argb >>> 24) >= 128 && colours.contains(argb & 0xFFFFFF)) {
                     return true;
                 }
             }
@@ -164,13 +166,13 @@ final class FoodColors {
         long[][] hues = new long[HUES][4];
         for (int y = 0; y < contents.height() * rows; y++) {
             for (int x = 0; x < contents.width(); x++) {
-                int abgr = image.getPixelRGBA(x, y);
-                if ((abgr >>> 24) < 128 || leftOut.contains(abgr & 0xFFFFFF)) {
+                int argb = image.getPixel(x, y);
+                if ((argb >>> 24) < 128 || leftOut.contains(argb & 0xFFFFFF)) {
                     continue;
                 }
-                int r = abgr & 0xFF;
-                int g = abgr >> 8 & 0xFF;
-                int b = abgr >> 16 & 0xFF;
+                int r = argb >> 16 & 0xFF;
+                int g = argb >> 8 & 0xFF;
+                int b = argb & 0xFF;
                 float[] hsb = Color.RGBtoHSB(r, g, b, null);
                 // The outline of an icon is its darkest part, and says nothing of what it shows.
                 if (hsb[2] < 0.3F) {

@@ -63,9 +63,9 @@ public final class SkilletLogic implements StationLogic {
     @Override
     public void onCustomAction(StationContext station, Player player, String action, CompoundTag data) {
         switch (action) {
-            case SkilletStation.ACTION_PLACE -> place(station, player, data.getBoolean(SkilletStation.ONE),
-                    data.contains(SkilletStation.FROM) ? data.getInt(SkilletStation.FROM) : -1);
-            case SkilletStation.ACTION_TOSS -> toss(station, player, data.getFloat(SkilletStation.STRENGTH));
+            case SkilletStation.ACTION_PLACE -> place(station, player, data.getBooleanOr(SkilletStation.ONE, false),
+                    data.contains(SkilletStation.FROM) ? data.getIntOr(SkilletStation.FROM, 0) : -1);
+            case SkilletStation.ACTION_TOSS -> toss(station, player, data.getFloatOr(SkilletStation.STRENGTH, 0.0F));
             case SkilletStation.ACTION_TAKE -> take(station, player);
             default -> {
             }
@@ -85,7 +85,7 @@ public final class SkilletLogic implements StationLogic {
         boolean wasEmpty = skillet.getStoredStack().isEmpty();
         if (!SkilletCooking.place(skillet, player, carried, one)) {
             CompoundTag data = new CompoundTag();
-            data.put(SkilletStation.STACK, carried.copyWithCount(1).saveOptional(station.level().registryAccess()));
+            data.put(SkilletStation.STACK, com.pockyl.handson_delight.Nbt26.saveOptional(carried.copyWithCount(1), station.level().registryAccess()));
             station.effect(SkilletStation.EFFECT_REFUSED, "pan", data);
             return;
         }
@@ -115,10 +115,10 @@ public final class SkilletLogic implements StationLogic {
             return;
         }
         CompoundTag data = new CompoundTag();
-        data.put(SkilletStation.STACK, taken.saveOptional(station.level().registryAccess()));
+        data.put(SkilletStation.STACK, com.pockyl.handson_delight.Nbt26.saveOptional(taken, station.level().registryAccess()));
         station.effect(SkilletStation.EFFECT_TAKEN, "pan", data);
         if (!player.getInventory().add(taken)) {
-            player.drop(taken, false);
+            player.drop(taken, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
     }
 

@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -56,7 +56,7 @@ public final class VatBehavior implements StationBehavior {
     private static final String[] BADGE_PARTS = {"badge", "dial_track", "dial", "thermo", "thermo_now", "preview"};
     /** The parts the block's own model has too: drawn by the scene only while the block is hidden. */
     private static final String[] VAT_PARTS = {"body", "lid"};
-    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "block/white_concrete");
+    private static final Identifier BADGE_TEXTURE = Identifier.fromNamespaceAndPath("minecraft", "block/white_concrete");
     /** The lid swings up this far about its hinge, degrees, in this many seconds, and settles with a little bounce. */
     private static final float LID_OPEN = 110.0F;
     private static final float LID_TIME = 0.45F;

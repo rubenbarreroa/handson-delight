@@ -1,17 +1,22 @@
 package com.pockyl.handson_delight.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.pockyl.diegesis.impl.client.render.ItemModels26;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 
@@ -29,27 +34,43 @@ import java.util.Optional;
  */
 final class ItemVoxels {
     private static final Map<Look, Optional<Icon>> ICONS = new HashMap<>();
-    /** The model the game falls back on when the icons were read: a new one after every resource reload. */
-    private static BakedModel readWith;
+    /** The model set when the icons were read: a new one after every resource reload. */
+    private static BlockStateModelSet readWith;
 
     private ItemVoxels() {
     }
 
-    /** What an icon is read for: the item and the model its stack shows, another one for a variant by NBT or CustomModelData. */
-    record Look(Item item, BakedModel model) {
+    /** What an icon is read for: the item and its component patch (for variants by CustomModelData, etc.). */
+    record Look(Item item, DataComponentPatch patch) {
         static Look of(ItemStack stack) {
-            return new Look(stack.getItem(), ItemVoxels.model(stack));
+            return new Look(stack.getItem(), stack.getComponentsPatch());
         }
     }
 
-    /** The model a stack shows in the hotbar, with the client's level and player as the game asks for it there. */
-    static BakedModel model(ItemStack stack) {
+    /** Resolves the GUI render state for {@code stack} on 26.3. */
+    static ItemStackRenderState resolve(ItemStack stack) {
         Minecraft minecraft = Minecraft.getInstance();
-        return minecraft.getItemRenderer().getModel(stack, minecraft.level, minecraft.player, 0);
+        return ItemModels26.resolveItem(stack, ItemDisplayContext.GUI, minecraft.level, 0);
+    }
+
+    /** Primary sprite of {@code stack}'s GUI model, or the missing texture sprite if none. */
+    static TextureAtlasSprite spriteOf(ItemStack stack) {
+        ItemStackRenderState state = resolve(stack);
+        for (int i = 0; i < state.activeLayerCount; i++) {
+            for (BakedQuad quad : state.layers[i].quads.all()) {
+                return quad.materialInfo().sprite();
+            }
+        }
+        TextureAtlasSprite flat = flatTexture(stack.getItem());
+        if (flat != null) {
+            return flat;
+        }
+        return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
+                .getSprite(MissingTextureAtlasSprite.getLocation());
     }
 
     /** The pixels of an item's flat icon: the sprite of the block atlas they come from, and which of them are solid. */
-    record Icon(ResourceLocation sprite, int width, int height, boolean[] solid, int[] colors) {
+    record Icon(Identifier sprite, int width, int height, boolean[] solid, int[] colors) {
         /** The pixel's colour, ARGB. */
         int color(int column, int row) {
             return colors[row * width + column];
@@ -235,18 +256,25 @@ final class ItemVoxels {
 
     /** The icon of an item drawn flat; empty for one drawn as a block, which is not cut into rows. */
     static Optional<Icon> icon(ItemStack stack) {
-        BakedModel missing = Minecraft.getInstance().getModelManager().getMissingModel();
-        if (missing != readWith) {
+        BlockStateModelSet current = Minecraft.getInstance().getModelManager().getBlockStateModelSet();
+        if (current != readWith) {
             // Resources were reloaded: the icons read so far may show other textures now.
-            readWith = missing;
+            readWith = current;
             ICONS.clear();
         }
-        return ICONS.computeIfAbsent(Look.of(stack), look -> read(stack, look.model()));
+        return ICONS.computeIfAbsent(Look.of(stack), look -> read(stack));
     }
 
-    private static Optional<Icon> read(ItemStack stack, BakedModel model) {
-        TextureAtlasSprite sprite = model.getParticleIcon();
-        if (model.isGui3d()) {
+    private static Optional<Icon> read(ItemStack stack) {
+        ItemStackRenderState state = resolve(stack);
+        TextureAtlasSprite sprite = null;
+        for (int i = 0; i < state.activeLayerCount && sprite == null; i++) {
+            for (BakedQuad quad : state.layers[i].quads.all()) {
+                sprite = quad.materialInfo().sprite();
+                break;
+            }
+        }
+        if (state.usesBlockLight() || sprite == null) {
             // A block lies as a block. Food that a resource pack (3D items) gave a model of its own still has its flat texture in
             // the atlas: it lies flat and is cut like any food, instead of standing up without marks.
             sprite = stack.getItem() instanceof BlockItem ? null : flatTexture(stack.getItem());
@@ -262,19 +290,23 @@ final class ItemVoxels {
         int[] colors = new int[width * height];
         for (int row = 0; row < height; row++) {
             for (int column = 0; column < width; column++) {
-                int abgr = image.getPixelRGBA(column, row);
-                solid[row * width + column] = (abgr >>> 24) >= 128;
-                colors[row * width + column] = (abgr & 0xFF00FF00) | (abgr & 0xFF) << 16 | (abgr >> 16) & 0xFF;
+                int argb = image.getPixel(column, row);
+                solid[row * width + column] = (argb >>> 24) >= 128;
+                colors[row * width + column] = argb;
             }
         }
         return Optional.of(new Icon(contents.name(), width, height, solid, colors));
     }
 
-    /** The item's own flat texture, {@code <namespace>:item/<path>}, as the block atlas holds every item texture; null without one. */
+    /** The item's own flat texture, {@code <namespace>:item/<path>}, checking the 26.3 items atlas first then blocks atlas. */
     private static TextureAtlasSprite flatTexture(Item item) {
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
-        TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS)
-                .getSprite(id.withPrefix("item/"));
+        Identifier id = BuiltInRegistries.ITEM.getKey(item).withPrefix("item/");
+        var atlasManager = Minecraft.getInstance().getAtlasManager();
+        TextureAtlasSprite sprite = atlasManager.getAtlasOrThrow(AtlasIds.ITEMS).getSprite(id);
+        if (!sprite.contents().name().equals(MissingTextureAtlasSprite.getLocation())) {
+            return sprite;
+        }
+        sprite = atlasManager.getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(id);
         return sprite.contents().name().equals(MissingTextureAtlasSprite.getLocation()) ? null : sprite;
     }
 

@@ -20,7 +20,7 @@ public final class Cookable {
         if (ingredient.isEmpty()) {
             return true;
         }
-        for (ItemStack stack : ingredient.getItems()) {
+        for (ItemStack stack : com.pockyl.handson_delight.Nbt26.ingredientItems(ingredient)) {
             // Forge and NeoForge stand a named barrier in for an empty tag.
             if (!stack.isEmpty() && !stack.is(Items.BARRIER)) {
                 return true;

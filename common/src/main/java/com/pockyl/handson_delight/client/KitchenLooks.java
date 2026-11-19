@@ -43,7 +43,7 @@ final class KitchenLooks {
         if (!isCracked(stack)) {
             return stack;
         }
-        Item fried = BuiltInRegistries.ITEM.get(FarmersDelightContent.id("fried_egg"));
+        Item fried = BuiltInRegistries.ITEM.getValue(FarmersDelightContent.id("fried_egg"));
         return fried == Items.AIR ? stack : new ItemStack(fried);
     }
 
@@ -62,8 +62,8 @@ final class KitchenLooks {
         if (full.isEmpty()) {
             return Optional.empty();
         }
-        Item container = stack.getItem().getCraftingRemainingItem();
-        Optional<ItemVoxels.Icon> empty = container == null ? Optional.empty() : ItemVoxels.icon(new ItemStack(container));
+        ItemStack container = com.pockyl.handson_delight.Nbt26.craftingRemainder(stack);
+        Optional<ItemVoxels.Icon> empty = container.isEmpty() ? Optional.empty() : ItemVoxels.icon(container);
         int[] at = ItemVoxels.contents(full.get(), empty);
         int[] light = ItemVoxels.lightest(full.get(), empty);
         return Optional.of(new Liquid(full.get(), at[0], at[1], light[0], light[1]));

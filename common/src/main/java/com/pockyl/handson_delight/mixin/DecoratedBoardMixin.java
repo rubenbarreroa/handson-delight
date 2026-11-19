@@ -122,7 +122,7 @@ abstract class DecoratedBoardMixin implements KitchenBoard {
     private void handson$loadLayers(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo callback) {
         handson$layers.clear();
         if (tag.contains(LAYERS)) {
-            ContainerHelper.loadAllItems(tag.getCompound(LAYERS), handson$layers, registries);
+            ContainerHelper.loadAllItems(tag.getCompoundOrEmpty(LAYERS), handson$layers, registries);
         }
     }
 

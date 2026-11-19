@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +37,7 @@ public final class MonsterPotTests {
     }
 
     private static Item dd(String path) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(FarmersDelightContent.DUNGEONS_DELIGHT + ":" + path));
+        return BuiltInRegistries.ITEM.get(Identifier.tryParse(FarmersDelightContent.DUNGEONS_DELIGHT + ":" + path));
     }
 
     /** A monster pot over a spawner, which heats it, with the logic the station would make for it; null without Dungeons Delight. */

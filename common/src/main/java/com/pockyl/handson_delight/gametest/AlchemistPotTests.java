@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -38,7 +38,7 @@ public final class AlchemistPotTests {
     }
 
     private static Item fs(String path) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(FarmersDelightContent.FARMERS_SPELL + ":" + path));
+        return BuiltInRegistries.ITEM.get(Identifier.tryParse(FarmersDelightContent.FARMERS_SPELL + ":" + path));
     }
 
     /** An alchemist pot over {@code heat} (air: no fire), with the logic the station would make for it; null without Farmer's Spell. */
@@ -58,7 +58,7 @@ public final class AlchemistPotTests {
         return new Setup(station, new PotLogic(station), pot, scrolls);
     }
 
-    private static ItemStack scroll(Setup setup, ResourceLocation school) {
+    private static ItemStack scroll(Setup setup, Identifier school) {
         List<ItemStack> scrolls = setup.scrolls.handson$scrollsOf(school);
         return scrolls.isEmpty() ? ItemStack.EMPTY : scrolls.get(0).copy();
     }

@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -335,10 +335,10 @@ public final class StoveTests {
         }
 
         /** The effects sent, for the tests to look at. */
-        final java.util.List<ResourceLocation> effects = new java.util.ArrayList<>();
+        final java.util.List<Identifier> effects = new java.util.ArrayList<>();
 
         @Override
-        public void effect(ResourceLocation effect, String node, CompoundTag data) {
+        public void effect(Identifier effect, String node, CompoundTag data) {
             effects.add(effect);
         }
     }

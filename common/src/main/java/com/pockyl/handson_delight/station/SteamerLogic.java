@@ -2,7 +2,7 @@ package com.pockyl.handson_delight.station;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -254,7 +254,7 @@ public final class SteamerLogic implements StationLogic {
      * there are free places on it and things to lay.
      */
     private void fill(StationContext station, SteamerTower tower, Player player, String id, boolean all) {
-        ResourceLocation key = ResourceLocation.tryParse(id);
+        Identifier key = Identifier.tryParse(id);
         SteamerStation.Steaming recipe = SteamerStation.recipes(station.level()).stream().filter(it -> it.id().equals(key)).findFirst()
                 .orElse(null);
         if (recipe == null || tower.racks() == 0) {

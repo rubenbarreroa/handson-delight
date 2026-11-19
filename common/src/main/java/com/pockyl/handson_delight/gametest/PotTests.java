@@ -9,7 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
@@ -168,7 +168,7 @@ public final class PotTests {
     }
 
     /** The dish the ingredient slots make as Farmer's Delight reads them, or null. */
-    private static ResourceLocation made(GameTestHelper helper, CookingPotBlockEntity pot) {
+    private static Identifier made(GameTestHelper helper, CookingPotBlockEntity pot) {
         List<ItemStack> inPot = new ArrayList<>();
         for (int i = 0; i < CookingPotBlockEntity.MEAL_DISPLAY_SLOT; i++) {
             inPot.add(Platform.INSTANCE.getItem(pot, i));
@@ -352,7 +352,7 @@ public final class PotTests {
 
     /** Christmas Delight asks for milk as {@code c:foods/milk}, which no other mod fills: it takes the milk bottle and the bucket. */
     public static void milkAskedForAsFoodIsMilk(GameTestHelper helper) {
-        Ingredient milk = Ingredient.of(TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "foods/milk")));
+        Ingredient milk = Ingredient.of(TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "foods/milk")));
         helper.assertTrue(milk.test(new ItemStack(fd("milk_bottle"))), "a milk bottle is milk");
         helper.assertTrue(milk.test(new ItemStack(Items.MILK_BUCKET)), "a milk bucket is milk");
         helper.assertTrue(Cookable.ingredient(milk), "so the dishes of milk can be made");
@@ -835,7 +835,7 @@ public final class PotTests {
 
     private static void addRecipe(GameTestHelper helper, String name, CookingPotRecipe recipe) {
         RecipeManager recipes = helper.getLevel().getRecipeManager();
-        ResourceLocation id = HandsOnDelight.id("test_" + name);
+        Identifier id = HandsOnDelight.id("test_" + name);
         List<RecipeHolder<?>> all = new ArrayList<>(recipes.getRecipes());
         all.removeIf(holder -> holder.id().equals(id));
         all.add(new RecipeHolder<>(id, recipe));
@@ -1114,7 +1114,7 @@ public final class PotTests {
         }
 
         @Override
-        public void effect(ResourceLocation effect, String node, CompoundTag data) {
+        public void effect(Identifier effect, String node, CompoundTag data) {
         }
     }
 }

@@ -2,7 +2,7 @@ package com.pockyl.handson_delight.station;
 
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +35,7 @@ public final class KitchenVat {
     public static final int INGREDIENTS = 6;
     public static final int CONTAINER_SLOT = 6;
     public static final int OUTPUT_SLOT = 7;
-    public static final ResourceLocation AGING = ResourceLocation.fromNamespaceAndPath(MOD_ID, "aging");
+    public static final Identifier AGING = Identifier.fromNamespaceAndPath(MOD_ID, "aging");
     /** The vat's block state property for how warm it is; the same names as its {@code VatTemperature}. */
     private static final String TEMPERATURE_PROPERTY = "temperature";
 
@@ -169,7 +169,7 @@ public final class KitchenVat {
      * An aging recipe: what goes in (one of each, in any of the six places), the container the result is put in (empty for none),
      * how warm the vat must be, and what comes out after {@code ticks}.
      */
-    public record Aging(ResourceLocation id, List<Ingredient> ingredients, Ingredient container, Temperature temperature, ItemStack result,
+    public record Aging(Identifier id, List<Ingredient> ingredients, Ingredient container, Temperature temperature, ItemStack result,
             int ticks) {
         public boolean hasContainer() {
             return !container.isEmpty();

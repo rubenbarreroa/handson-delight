@@ -3,7 +3,7 @@ package com.pockyl.handson_delight.gametest;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CampfireCookingRecipe;
@@ -65,17 +65,17 @@ public final class RecipeAudit {
         Map<String, Integer> others = new TreeMap<>();
 
         List<AssemblyRecipes.Assembly> assembled = new ArrayList<>(AssemblyRecipes.all());
-        Set<ResourceLocation> onTheBoard = assembled.stream().map(AssemblyRecipes.Assembly::id).collect(Collectors.toSet());
+        Set<Identifier> onTheBoard = assembled.stream().map(AssemblyRecipes.Assembly::id).collect(Collectors.toSet());
         for (RecipeHolder<?> holder : level.getRecipeManager().getRecipes()) {
             Recipe<?> recipe = holder.value();
             String namespace = holder.id().getNamespace();
             boolean ours = namespace.equals(FarmersDelightContent.MOD_ID) || Platform.INSTANCE.isFarmersDelightAddon(namespace);
-            ResourceLocation type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType());
+            Identifier type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType());
             if (recipe instanceof CraftingRecipe crafting && ours && !onTheBoard.contains(holder.id())
                     && isDish(crafting.getResultItem(level.registryAccess())) && kinds(crafting.getIngredients()) > 1
                     && !crafting.isSpecial() && !AssemblyRecipes.usesWorkshop(crafting.getIngredients())) {
-                ResourceLocation id = holder.id();
-                ResourceLocation serializer = BuiltInRegistries.RECIPE_SERIALIZER.getKey(recipe.getSerializer());
+                Identifier id = holder.id();
+                Identifier serializer = BuiltInRegistries.RECIPE_SERIALIZER.getKey(recipe.getSerializer());
                 if (serializer != null && !serializer.getNamespace().equals("minecraft")
                         && !serializer.getNamespace().equals(FarmersDelightContent.MOD_ID)
                         && !(crafting instanceof ShapedRecipe) && !(crafting instanceof ShapelessRecipe)) {

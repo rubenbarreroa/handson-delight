@@ -1,7 +1,7 @@
 package com.pockyl.handson_delight.station;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +32,7 @@ public final class KitchenGrill {
     private static final String ENTITY = "com.mao.barbequesdelight.content.block.GrillBlockEntity";
     private static final String SEASONING = "com.mao.barbequesdelight.content.item.SeasoningItem";
     public static final int PLACES = 2;
-    public static final ResourceLocation GRILLING = ResourceLocation.fromNamespaceAndPath(MOD_ID, "grilling");
+    public static final Identifier GRILLING = Identifier.fromNamespaceAndPath(MOD_ID, "grilling");
 
     private static Class<?> entityClass;
     private static Field entriesField;
@@ -228,7 +228,7 @@ public final class KitchenGrill {
     }
 
     /** A grilling recipe: what goes on, what comes off, and in how many ticks on both sides. */
-    public record Grilling(ResourceLocation id, Ingredient ingredient, ItemStack result, int ticks) {
+    public record Grilling(Identifier id, Ingredient ingredient, ItemStack result, int ticks) {
     }
 
     /** Every grilling recipe of the grill, in the recipe manager's order; empty without Barbeque's Delight. */
@@ -331,7 +331,7 @@ public final class KitchenGrill {
 
     /** The seasoning item {@code stack} is seasoned with, read from its {@code barbequesdelight:seasoning} data. */
     public static Optional<ItemStack> seasoning(ItemStack stack) {
-        return Optional.ofNullable(BuiltInRegistries.DATA_COMPONENT_TYPE.get(ResourceLocation.fromNamespaceAndPath(MOD_ID, "seasoning")))
+        return Optional.ofNullable(BuiltInRegistries.DATA_COMPONENT_TYPE.get(Identifier.fromNamespaceAndPath(MOD_ID, "seasoning")))
                 .map(stack::get)
                 .filter(value -> value instanceof net.minecraft.world.level.ItemLike)
                 .map(value -> new ItemStack((net.minecraft.world.level.ItemLike) value));
@@ -339,6 +339,6 @@ public final class KitchenGrill {
 
     /** The burnt skewer, what anything left too long on the grill becomes. */
     public static boolean isBurnt(ItemStack stack) {
-        return BuiltInRegistries.ITEM.getKey(stack.getItem()).equals(ResourceLocation.fromNamespaceAndPath(MOD_ID, "burnt_skewer"));
+        return BuiltInRegistries.ITEM.getKey(stack.getItem()).equals(Identifier.fromNamespaceAndPath(MOD_ID, "burnt_skewer"));
     }
 }

@@ -3,7 +3,7 @@ package com.pockyl.handson_delight.gametest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,10 +26,10 @@ public final class BasinTests {
     }
 
     private static final java.util.function.Supplier<Item> CABBAGE = () -> BuiltInRegistries.ITEM.get(
-            ResourceLocation.fromNamespaceAndPath("farmersdelight", "cabbage"));
+            Identifier.fromNamespaceAndPath("farmersdelight", "cabbage"));
 
     private static Item barbeque(String path) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(KitchenGrill.MOD_ID, path));
+        return BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath(KitchenGrill.MOD_ID, path));
     }
 
     private record Setup(PotTests.TestStation station, BasinLogic logic, KitchenBasin basin, BlockPos pos) {

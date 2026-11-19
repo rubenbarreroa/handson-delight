@@ -5,7 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -50,11 +50,11 @@ public final class OvenBehavior implements StationBehavior {
     private static final String[] BADGE_PARTS = {"badge", "dial_track", "dial", "flame", "flame_lit", "preview"};
     /** The parts the block's own model has too: drawn by the scene only while the block is hidden. */
     private static final String[] OVEN_PARTS = {"body", "door_left", "door_right", "tray_model"};
-    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "block/white_concrete");
+    private static final Identifier BADGE_TEXTURE = Identifier.fromNamespaceAndPath("minecraft", "block/white_concrete");
     private static final SoundEvent OPEN_SOUND = SoundEvent.createVariableRangeEvent(
-            ResourceLocation.fromNamespaceAndPath(KitchenOven.MOD_ID, "block.oven.open"));
+            Identifier.fromNamespaceAndPath(KitchenOven.MOD_ID, "block.oven.open"));
     private static final SoundEvent CLOSE_SOUND = SoundEvent.createVariableRangeEvent(
-            ResourceLocation.fromNamespaceAndPath(KitchenOven.MOD_ID, "block.oven.close"));
+            Identifier.fromNamespaceAndPath(KitchenOven.MOD_ID, "block.oven.close"));
     /**
      * The door's two leaves swing open on their hinges at its sides, as gates, then the tray slides out between them; shutting,
      * the tray goes in first. Seconds each; how far the leaves turn, degrees; how far out the tray comes, pixels.

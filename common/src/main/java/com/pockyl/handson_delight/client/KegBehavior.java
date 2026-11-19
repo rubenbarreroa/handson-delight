@@ -8,7 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
@@ -73,7 +73,7 @@ public final class KegBehavior implements StationBehavior {
     /** The badge over the keg: its plate, the bar and the thermometer. */
     private static final String[] BADGE_PARTS = {"badge", "dial_track", "dial", "thermo", "thermo_now", "preview"};
     private static final String[] SHOWN_IN_USE = {"keg", "lid", "drink", "tap", "mouth", "served"};
-    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "block/white_concrete");
+    private static final Identifier BADGE_TEXTURE = Identifier.fromNamespaceAndPath("minecraft", "block/white_concrete");
     /**
      * The lid is taken off and set down on the floor on the cook's right, leaning on the keg's side, and put back when the last
      * one goes: lifted clear of the rim, carried over in an arc while it is turned on its edge, set down. Seconds each way; where
@@ -472,7 +472,7 @@ public final class KegBehavior implements StationBehavior {
     }
 
     @Override
-    public void onEffect(StationView view, ResourceLocation effect, String node, CompoundTag data) {
+    public void onEffect(StationView view, Identifier effect, String node, CompoundTag data) {
         Fluid fluid = fluidOf(data.getString(KegStation.FLUID));
         int color = 0xFF000000 | colourOf(view, keg(view), fluid) & 0xFFFFFF;
         if (KegStation.EFFECT_POURED.equals(effect)) {
@@ -483,7 +483,7 @@ public final class KegBehavior implements StationBehavior {
                 view.playSound(SoundEvents.BOTTLE_FILL, "drink", 0.5F, 1.0F);
             }
         } else if (KegStation.EFFECT_TAPPED.equals(effect) && fluid != Fluids.EMPTY) {
-            Item vessel = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(data.getString(KegStation.VESSEL)));
+            Item vessel = BuiltInRegistries.ITEM.get(Identifier.tryParse(data.getString(KegStation.VESSEL)));
             draughts.tapped(view, new ItemStack(vessel), BuiltInRegistries.FLUID.getKey(fluid), colourOf(view, keg(view), fluid),
                     KegLiquids.of(fluid).orElse(null), data.getInt(KegStation.COUNT));
         }
@@ -494,7 +494,7 @@ public final class KegBehavior implements StationBehavior {
      * waiting for it. Without a container to show, it only splashes.
      */
     private void poured(StationView view, CompoundTag data, int color) {
-        Item vessel = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(data.getString(KegStation.VESSEL)));
+        Item vessel = BuiltInRegistries.ITEM.get(Identifier.tryParse(data.getString(KegStation.VESSEL)));
         NodeView hand = view.node("pour_hand").orElse(null);
         if (hand == null || vessel == null || vessel == Items.AIR || !view.isFocused()) {
             view.node("drink").ifPresent(drink -> drink.ripple(shape.middleX(), shape.middleZ(), 0.6F));
@@ -517,7 +517,7 @@ public final class KegBehavior implements StationBehavior {
     }
 
     private static Fluid fluidOf(String id) {
-        ResourceLocation key = ResourceLocation.tryParse(id);
+        Identifier key = Identifier.tryParse(id);
         return key == null || id.isEmpty() ? Fluids.EMPTY : BuiltInRegistries.FLUID.get(key);
     }
 

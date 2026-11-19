@@ -185,8 +185,8 @@ public final class PotCooking {
     }
 
     public void load(CompoundTag tag) {
-        byHand = tag.getBoolean(BY_HAND);
-        bonusCarried = tag.getFloat(BONUS);
+        byHand = tag.getBooleanOr(BY_HAND, false);
+        bonusCarried = tag.getFloatOr(BONUS, 0.0F);
         // What a loaded pot holds was there before: only what comes in from now on says who feeds it.
         fed = -1;
     }

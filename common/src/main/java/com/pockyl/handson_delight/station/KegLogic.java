@@ -2,7 +2,7 @@ package com.pockyl.handson_delight.station;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -37,7 +37,7 @@ public final class KegLogic implements StationLogic {
     /** A cook changed what lies in the keg: it is laid out on the next tick. */
     private boolean unsorted;
     /** The recipe the cook last picked in the book: the keg's choice while its food makes it, until the keg is empty. */
-    private ResourceLocation wanted;
+    private Identifier wanted;
     /** The liquid the food was last laid out for: food thrown into an empty keg is laid out again once its liquid is poured in. */
     private Fluid arrangedFor = Fluids.EMPTY;
     /** While the lid is off: how far the keg had fermented, which it stays at until the lid is back on; -1 with the lid on. */
@@ -256,7 +256,7 @@ public final class KegLogic implements StationLogic {
                         data.contains(KegStation.FROM) ? data.getInt(KegStation.FROM) : -1);
             }
         } else if (KegStation.ACTION_FILL.equals(action)) {
-            ResourceLocation id = ResourceLocation.tryParse(data.getString(KegStation.DISH));
+            Identifier id = Identifier.tryParse(data.getString(KegStation.DISH));
             // A recipe picked in the book takes the lid off for its ingredients to go in.
             setLid(station, true);
             keg.handson$recipes().stream().filter(recipe -> recipe.id().equals(id)).findFirst()
@@ -430,7 +430,7 @@ public final class KegLogic implements StationLogic {
         state.setData(own);
         int capacity = Math.max(1, keg.handson$capacity());
         // The tank holds the keg's own liquid, so that it looks like what it is (KegLiquids on the client).
-        ResourceLocation liquid = keg.handson$fluid() == Fluids.EMPTY ? HandsOnDelight.id("drink") : BuiltInRegistries.FLUID.getKey(keg.handson$fluid());
+        Identifier liquid = keg.handson$fluid() == Fluids.EMPTY ? HandsOnDelight.id("drink") : BuiltInRegistries.FLUID.getKey(keg.handson$fluid());
         state.setTank(KegStation.DRINK, TankContents.of(liquid, Math.round(100.0F * keg.handson$amount() / capacity)));
     }
 }

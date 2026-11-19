@@ -36,7 +36,7 @@ final class CookedPieces {
     private static final float GRAIN = 0.75F;
     /** Pasta floats in strands; Farmer's Delight's tag, and the common one. */
     private static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> PASTA = net.minecraft.tags.TagKey.create(
-            net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("c", "foods/pasta"));
+            net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath("c", "foods/pasta"));
     private static final float FAT_LIGHT = 0.55F;
     /** Fat floats on everything that is not clear: one drop for so many pieces of food. */
     private static final int PIECES_PER_DROP = 2;
@@ -62,12 +62,12 @@ final class CookedPieces {
         Set<Item> found = new LinkedHashSet<>();
         for (RecipeHolder<CookingPotRecipe> holder : Platform.INSTANCE.cookingRecipes(level)) {
             CookingPotRecipe recipe = holder.value();
-            if (recipe.getResultItem(level.registryAccess()).is(meal.getItem())) {
-                for (Ingredient ingredient : recipe.getIngredients()) {
-                    ItemStack[] choices = ingredient.getItems();
+            if (recipe.result().create().is(meal.getItem())) {
+                for (Ingredient ingredient : recipe.input()) {
+                    ItemStack[] choices = com.pockyl.handson_delight.Nbt26.ingredientItems(ingredient);
                     // A bucket of milk leaves its bucket: it is no food to find in the soup; nor is sugar, which dissolves, nor a
                     // bone, which is taken out again.
-                    if (choices.length > 0 && !choices[0].getItem().hasCraftingRemainingItem() && !leavesNoPieces(choices[0])) {
+                    if (choices.length > 0 && com.pockyl.handson_delight.Nbt26.craftingRemainder(choices[0]).isEmpty() && !leavesNoPieces(choices[0])) {
                         found.add(cooked(level, choices[0]).getItem());
                     }
                 }
@@ -83,8 +83,8 @@ final class CookedPieces {
 
     /** What a furnace makes of it, if that is still food: a steak of raw beef; a carrot stays a carrot. */
     private static ItemStack cooked(Level level, ItemStack raw) {
-        return level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(raw), level)
-                .map(recipe -> recipe.value().getResultItem(level.registryAccess()))
+        return com.pockyl.handson_delight.Nbt26.getRecipeFor(level, RecipeType.SMELTING, new SingleRecipeInput(raw))
+                .map(recipe -> com.pockyl.handson_delight.Nbt26.recipeResult(recipe.value()))
                 .filter(stack -> stack.has(DataComponents.FOOD))
                 .orElse(raw);
     }

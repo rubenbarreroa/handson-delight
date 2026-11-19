@@ -1,7 +1,7 @@
 package com.pockyl.handson_delight.station;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -33,7 +33,7 @@ public final class OvenLogic implements StationLogic {
     /** The tray is being shared out: its own changes do not share it out again. */
     private boolean arranging;
     /** The recipe the cook last picked in the book: the oven's choice while the tray's food makes it, until the tray is empty. */
-    private net.minecraft.resources.ResourceLocation picked;
+    private net.minecraft.resources.Identifier picked;
 
     public OvenLogic(StationContext station) {
         oven = KitchenOven.of(station.blockEntity());
@@ -157,7 +157,7 @@ public final class OvenLogic implements StationLogic {
                 lay(player, data.getInt(OvenStation.FROM));
             }
         } else if (OvenStation.ACTION_FILL.equals(action)) {
-            ResourceLocation id = ResourceLocation.tryParse(data.getString(OvenStation.DISH));
+            Identifier id = Identifier.tryParse(data.getString(OvenStation.DISH));
             KitchenOven.recipes(station.level()).stream().filter(recipe -> recipe.id().equals(id)).findFirst().ifPresent(recipe -> {
                 // A recipe picked in the book opens the door for its ingredients to go in.
                 setDoor(station, true);

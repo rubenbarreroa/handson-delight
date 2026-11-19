@@ -7,7 +7,7 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -64,7 +64,7 @@ public final class RecipeEditTests {
                     "a recipe removed and added anew under its id is made as added");
         }
         if (Platform.INSTANCE.isLoaded("crafttweaker")) {
-            ResourceLocation chicken = FarmersDelightContent.id("chicken_sandwich");
+            Identifier chicken = FarmersDelightContent.id("chicken_sandwich");
             helper.assertTrue(helper.getLevel().getRecipeManager().byKey(chicken).isEmpty(), "the script removed the recipe");
             helper.assertTrue(!AssemblyRecipes.isMadeOnTheBoard(chicken), "and the board does not make it");
         }
@@ -72,7 +72,7 @@ public final class RecipeEditTests {
     }
 
     private static AssemblyRecipes.Assembly dish(GameTestHelper helper, String path) {
-        ResourceLocation id = FarmersDelightContent.id(path);
+        Identifier id = FarmersDelightContent.id(path);
         Optional<AssemblyRecipes.Assembly> dish = AssemblyRecipes.all().stream().filter(it -> it.id().equals(id)).findFirst();
         helper.assertTrue(dish.isPresent(), id + " is made on the board");
         return dish.get();

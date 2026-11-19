@@ -2,13 +2,13 @@ package com.pockyl.handson_delight.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -99,7 +99,7 @@ public final class CuisineBehavior implements StationBehavior {
     private static final int MARK_COLOR = 0xA0FFFFFF;
     private static final int SCORE_COLOR = 0xC0281C12;
     private static final int SHADE_COLOR = 0x8C1A120C;
-    private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("block/white_concrete");
+    private static final Identifier WHITE = Identifier.withDefaultNamespace("block/white_concrete");
     /** The box of a finished dish (x, y, z from and to) when its models cannot be read: a roll lying along x. */
     private static final float[] ROLL_BOX = {2.0F, 14.0F, 1.0F, 5.0F, 6.0F, 10.0F};
     private static final Direction[] SIDES = {null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST,
@@ -112,8 +112,8 @@ public final class CuisineBehavior implements StationBehavior {
     private final List<Step> steps = new ArrayList<>();
     /** What the scene draws as lying on the board: lags the board while a step is being shown. */
     private List<ItemStack> shown = List.of();
-    private final List<ResourceLocation> shownModels = new ArrayList<>();
-    private List<ResourceLocation> previewModels = List.of();
+    private final List<Identifier> shownModels = new ArrayList<>();
+    private List<Identifier> previewModels = List.of();
     private Object previewFor;
     private boolean lifted;
     private KitchenMotions.Motion hand;
@@ -309,15 +309,15 @@ public final class CuisineBehavior implements StationBehavior {
     /** Draws {@code contents} with the board's models; with {@code pop}, a part that was not there comes up out of the board. */
     private void showContents(StationView view, List<ItemStack> contents, boolean pop) {
         KitchenCuisine board = board(view);
-        List<ResourceLocation> models = board == null ? null : board.handson$modelsOf(contents);
+        List<Identifier> models = board == null ? null : board.handson$modelsOf(contents);
         if (models == null) {
             models = board == null ? List.of() : board.handson$models();
         }
         shown = copy(contents);
         float turn = turn(view);
-        Set<ResourceLocation> before = new HashSet<>(shownModels);
+        Set<Identifier> before = new HashSet<>(shownModels);
         for (int k = 0; k < PARTS; k++) {
-            ResourceLocation model = k < models.size() ? models.get(k) : null;
+            Identifier model = k < models.size() ? models.get(k) : null;
             boolean fresh = model != null && !before.contains(model);
             view.node("part_" + k).ifPresent(node -> {
                 node.setVisible(model != null);
@@ -365,11 +365,11 @@ public final class CuisineBehavior implements StationBehavior {
             return;
         }
         previewFor = key;
-        List<ResourceLocation> models = next == null ? null : board.handson$modelsOf(next);
+        List<Identifier> models = next == null ? null : board.handson$modelsOf(next);
         previewModels = models == null ? List.of() : models.stream().filter(model -> !shownModels.contains(model)).toList();
         float turn = turn(view);
         for (int k = 0; k < PARTS; k++) {
-            ResourceLocation model = k < previewModels.size() ? previewModels.get(k) : null;
+            Identifier model = k < previewModels.size() ? previewModels.get(k) : null;
             view.node("preview_" + k).ifPresent(node -> {
                 node.setVisible(model != null);
                 if (model != null) {
@@ -561,14 +561,14 @@ public final class CuisineBehavior implements StationBehavior {
 
     /** The box of what lies on the board (x, y, z from and to, scene pixels), read from its models' faces once they change. */
     private void measure() {
-        List<ResourceLocation> models = List.copyOf(shownModels);
+        List<Identifier> models = List.copyOf(shownModels);
         if (models.equals(measuredFor)) {
             return;
         }
         measuredFor = models;
         float[] found = {Float.MAX_VALUE, -Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE};
         RandomSource random = RandomSource.create(42L);
-        for (ResourceLocation id : models) {
+        for (Identifier id : models) {
             BakedModel model = ClientPlatform.INSTANCE.model(id);
             if (model == null) {
                 continue;
@@ -754,7 +754,7 @@ public final class CuisineBehavior implements StationBehavior {
     }
 
     @Override
-    public void onEffect(StationView view, ResourceLocation effect, String node, CompoundTag data) {
+    public void onEffect(StationView view, Identifier effect, String node, CompoundTag data) {
         if (CuisineBoardStation.EFFECT_LAID.equals(effect)) {
             laid(view, data);
         } else if (CuisineBoardStation.EFFECT_TAKEN.equals(effect)) {
@@ -874,7 +874,7 @@ public final class CuisineBehavior implements StationBehavior {
     private void rollUp(StationView view, List<NodeView> parts, List<ItemStack> afterIt) {
         float turn = turn(view);
         KitchenCuisine board = board(view);
-        List<ResourceLocation> rolled = board == null ? null : board.handson$modelsOf(afterIt);
+        List<Identifier> rolled = board == null ? null : board.handson$modelsOf(afterIt);
         Optional<NodeView> roll = view.node("roll");
         if (rolled == null || rolled.isEmpty() || roll.isEmpty()) {
             showContents(view, afterIt, true);
@@ -886,7 +886,7 @@ public final class CuisineBehavior implements StationBehavior {
         float far = -side * SHEET_HALF;
         Vector3f pivot = toScene(turn, 0.0F, SHEET_Y, far);
         for (NodeView part : parts) {
-            Optional<ResourceLocation> model = part.visual().flatMap(Visual::model);
+            Optional<Identifier> model = part.visual().flatMap(Visual::model);
             if (model.isEmpty()) {
                 continue;
             }
@@ -947,7 +947,7 @@ public final class CuisineBehavior implements StationBehavior {
         ItemStack off = ItemStack.parseOptional(view.level().registryAccess(), data.getCompound(CuisineBoardStation.STACK));
         after(at, () -> {
             KitchenCuisine board = board(view);
-            List<ResourceLocation> left = board == null ? null : board.handson$modelsOf(afterIt);
+            List<Identifier> left = board == null ? null : board.handson$modelsOf(afterIt);
             view.playSound(SoundEvents.ITEM_PICKUP, "surface", 0.3F, 1.5F);
             if (left == null || !shownModels.containsAll(left)) {
                 showContents(view, afterIt, false);

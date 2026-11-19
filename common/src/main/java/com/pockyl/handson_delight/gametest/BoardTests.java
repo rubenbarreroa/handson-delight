@@ -14,7 +14,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -226,25 +226,25 @@ public final class BoardTests {
         HolderLookup.Provider registries = helper.getLevel().registryAccess();
         // Cultural Delights takes the stew, the cake and the bread off the crafting table (into its pot and its oven): then there is no
         // craft of them to read.
-        recipes.byKey(ResourceLocation.parse("minecraft:mushroom_stew")).ifPresent(craft -> {
+        recipes.byKey(Identifier.parse("minecraft:mushroom_stew")).ifPresent(craft -> {
             AssemblyRecipes.Assembly stew = AssemblyRecipes.fromCraft(craft, registries).orElseThrow();
             helper.assertTrue(stew.kind() == AssemblyRecipes.Base.BOWL && stew.result().is(Items.MUSHROOM_STEW)
                     && stew.ingredients().size() == 3, "a shapeless craft is read with its ingredients and result");
         });
-        recipes.byKey(ResourceLocation.parse("minecraft:cake")).ifPresent(craft -> {
+        recipes.byKey(Identifier.parse("minecraft:cake")).ifPresent(craft -> {
             AssemblyRecipes.Assembly cake = AssemblyRecipes.fromCraft(craft, registries).orElseThrow();
             helper.assertTrue(cake.result().is(Items.CAKE) && cake.ingredients().size() == 9 && cake.kind() == AssemblyRecipes.Base.WHEAT,
                     "a shaped craft keeps its shape");
         });
-        recipes.byKey(ResourceLocation.parse("minecraft:bread")).ifPresent(craft -> helper.assertTrue(
+        recipes.byKey(Identifier.parse("minecraft:bread")).ifPresent(craft -> helper.assertTrue(
                 AssemblyRecipes.fromCraft(craft, registries).isEmpty(), "one kind of thing is no dish"));
         if (Platform.INSTANCE.isLoaded("kubejs")) {
-            helper.assertTrue(AssemblyRecipes.isMadeOnTheBoard(ResourceLocation.parse("kubejs:fungus_stew")),
+            helper.assertTrue(AssemblyRecipes.isMadeOnTheBoard(Identifier.parse("kubejs:fungus_stew")),
                     "a script's recipe with a tagged result is made on the board");
-            helper.assertTrue(AssemblyRecipes.isMadeOnTheBoard(ResourceLocation.parse("minecraft:mushroom_stew")),
+            helper.assertTrue(AssemblyRecipes.isMadeOnTheBoard(Identifier.parse("minecraft:mushroom_stew")),
                     "and so is every craft of that result");
         } else {
-            helper.assertTrue(!AssemblyRecipes.isMadeOnTheBoard(ResourceLocation.parse("minecraft:mushroom_stew")),
+            helper.assertTrue(!AssemblyRecipes.isMadeOnTheBoard(Identifier.parse("minecraft:mushroom_stew")),
                     "an untagged vanilla dish stays in the crafting table");
         }
         helper.succeed();
@@ -460,12 +460,12 @@ public final class BoardTests {
     }
 
     private static Item meal(String path) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("modest_meals", path));
+        return BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath("modest_meals", path));
     }
 
     /** The board's dish {@code path} of Modest Meals' meals (its folder in this mod's ids). */
     private static Optional<AssemblyRecipes.Assembly> mealDish(String path) {
-        ResourceLocation id = HandsOnDelight.id("modest_meals/" + path);
+        Identifier id = HandsOnDelight.id("modest_meals/" + path);
         return AssemblyRecipes.all().stream().filter(dish -> dish.id().equals(id)).findFirst();
     }
 
@@ -503,7 +503,7 @@ public final class BoardTests {
                 "laid on bread and pressed shut, got " + hamburger.kind() + " " + hamburger.finish());
         helper.assertTrue(mealDish("sandwich/3").filter(dish -> !dish.inBook() && dish.result().is(meal("sandwich"))).isPresent(),
                 "a sandwich of any three fillings is one too, without a page");
-        helper.assertTrue(AssemblyRecipes.isMadeOnTheBoard(ResourceLocation.fromNamespaceAndPath("modest_meals", "meal_crafting")),
+        helper.assertTrue(AssemblyRecipes.isMadeOnTheBoard(Identifier.fromNamespaceAndPath("modest_meals", "meal_crafting")),
                 "Modest Meals' recipe is made on the board");
         Map<Integer, ItemStack> grid = Map.of(1, new ItemStack(Items.BREAD), 3, new ItemStack(fd("beef_patty")),
                 4, new ItemStack(fd("cabbage_leaf")), 5, new ItemStack(fd("tomato")), 7, new ItemStack(Items.BREAD));
@@ -1215,7 +1215,7 @@ public final class BoardTests {
         helper.assertFalse(Cutting.isCooking(bush, List.of(kebab)), "nor a bush an axe cuts into sticks");
 
         Level level = helper.getLevel();
-        ResourceLocation shard = ResourceLocation.tryParse("frightsdelight:bone_shard");
+        Identifier shard = Identifier.tryParse("frightsdelight:bone_shard");
         if (!BuiltInRegistries.ITEM.containsKey(shard)) {
             // Fright's Delight comes with -Paddons.
             helper.succeed();
@@ -1550,7 +1550,7 @@ public final class BoardTests {
         private final BlockPos pos;
         private final StationState state = new StationState(CuttingBoardStation.SCHEMA);
         private final List<Player> users = new ArrayList<>();
-        private final List<ResourceLocation> effects = new ArrayList<>();
+        private final List<Identifier> effects = new ArrayList<>();
 
         Station(Level level, BlockPos pos) {
             this.level = level;
@@ -1593,7 +1593,7 @@ public final class BoardTests {
         }
 
         @Override
-        public void effect(ResourceLocation effect, String node, CompoundTag data) {
+        public void effect(Identifier effect, String node, CompoundTag data) {
             effects.add(effect);
         }
     }
@@ -1603,16 +1603,16 @@ public final class BoardTests {
      * and all, into the dish: made on the board they keep doing it, as the recipe's own code makes the dish. With -Paddons=wide.
      */
     public static void kebabsKeepTheSeasoningOfTheirSkewers(GameTestHelper helper) {
-        Item wrap = BuiltInRegistries.ITEM.get(ResourceLocation.parse("barbequesdelight:kebab_wrap"));
-        Item grilled = BuiltInRegistries.ITEM.get(ResourceLocation.parse("barbequesdelight:grilled_beef_skewer"));
-        DataComponentType<?> seasoning = BuiltInRegistries.DATA_COMPONENT_TYPE.get(ResourceLocation.parse("barbequesdelight:seasoning"));
+        Item wrap = BuiltInRegistries.ITEM.get(Identifier.parse("barbequesdelight:kebab_wrap"));
+        Item grilled = BuiltInRegistries.ITEM.get(Identifier.parse("barbequesdelight:grilled_beef_skewer"));
+        DataComponentType<?> seasoning = BuiltInRegistries.DATA_COMPONENT_TYPE.get(Identifier.parse("barbequesdelight:seasoning"));
         if (wrap == Items.AIR || grilled == Items.AIR || seasoning == null) {
             // Barbeque's Delight comes with -Paddons=wide.
             helper.succeed();
             return;
         }
         for (String dish : List.of("kebab_wrap", "kebab_sandwich", "bibimbap")) {
-            ResourceLocation id = ResourceLocation.parse("barbequesdelight:" + dish);
+            Identifier id = Identifier.parse("barbequesdelight:" + dish);
             helper.assertTrue(AssemblyRecipes.all().stream().anyMatch(made -> made.id().equals(id)), dish + " is a dish of the board");
         }
         DynamicOps<JsonElement> ops = helper.getLevel().registryAccess().createSerializationContext(JsonOps.INSTANCE);
@@ -1650,13 +1650,13 @@ public final class BoardTests {
      * same way, and a dish being put together is kept in the board. The decorated board's renderer draws the board itself.
      */
     public static void choppersDelightsBoardsAreStations(GameTestHelper helper) {
-        Block oak = BuiltInRegistries.BLOCK.get(ResourceLocation.tryParse("choppersdelight:oak_cutting_board"));
+        Block oak = BuiltInRegistries.BLOCK.get(Identifier.tryParse("choppersdelight:oak_cutting_board"));
         if (oak == Blocks.AIR) {
             // Chopper's Delight comes with -Paddons.
             helper.succeed();
             return;
         }
-        Block decorated = BuiltInRegistries.BLOCK.get(ResourceLocation.tryParse("choppersdelight:decorated_cutting_board"));
+        Block decorated = BuiltInRegistries.BLOCK.get(Identifier.tryParse("choppersdelight:decorated_cutting_board"));
         helper.assertTrue(CuttingBoardStation.TYPE.matches(oak.defaultBlockState()), "the oak board opens as the station");
         helper.assertTrue(CuttingBoardStation.TYPE.matches(decorated.defaultBlockState()), "the decorated board opens as the station");
         ChoppersCut oakCut = cutAtChoppersBoard(helper, oak, new BlockPos(1, 1, 1));

@@ -4,7 +4,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -21,7 +21,7 @@ import java.util.List;
  * usual fire; the time in seconds.
  */
 final class OvenBook implements RecipeBook.Source {
-    private static final ResourceLocation STOVE = ResourceLocation.fromNamespaceAndPath("farmersdelight", "stove");
+    private static final Identifier STOVE = Identifier.fromNamespaceAndPath("farmersdelight", "stove");
 
     @Override
     public List<RecipeBook.Page> pages(StationView view) {

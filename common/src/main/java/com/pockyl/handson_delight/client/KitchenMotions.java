@@ -86,8 +86,8 @@ final class KitchenMotions {
 
     /** The container a liquid comes in, or nothing when it comes in none. */
     static Optional<Item> containerOf(ItemStack stack) {
-        Item container = stack.getItem().getCraftingRemainingItem();
-        return container == null || container == Items.AIR ? Optional.empty() : Optional.of(container);
+        ItemStack container = com.pockyl.handson_delight.Nbt26.craftingRemainder(stack);
+        return container.isEmpty() || container.is(Items.AIR) ? Optional.empty() : Optional.of(container.getItem());
     }
 
     /**

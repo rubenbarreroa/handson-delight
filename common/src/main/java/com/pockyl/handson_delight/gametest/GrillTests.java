@@ -3,7 +3,7 @@ package com.pockyl.handson_delight.gametest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +31,7 @@ public final class GrillTests {
     }
 
     private static Item barbeque(String path) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(KitchenGrill.MOD_ID, path));
+        return BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath(KitchenGrill.MOD_ID, path));
     }
 
     private record Setup(PotTests.TestStation station, GrillLogic logic, KitchenGrill grill, BlockPos pos) {

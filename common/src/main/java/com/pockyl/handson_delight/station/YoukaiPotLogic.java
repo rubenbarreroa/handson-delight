@@ -3,7 +3,7 @@ package com.pockyl.handson_delight.station;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -244,7 +244,7 @@ public final class YoukaiPotLogic implements StationLogic {
      * everything it puts in what there is, and the pot waits for the rest.
      */
     private void fill(StationContext station, Player player, String id) {
-        ResourceLocation key = ResourceLocation.tryParse(id);
+        Identifier key = Identifier.tryParse(id);
         KitchenYoukaiPot.Dish dish = YoukaiPotStation.dishes(pot).stream().filter(it -> it.id().equals(key)).findFirst().orElse(null);
         if (dish == null) {
             return;

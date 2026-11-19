@@ -7,18 +7,15 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,7 +34,6 @@ import com.pockyl.diegesis.api.state.StationState;
 import com.pockyl.handson_delight.FarmersDelightContent;
 import com.pockyl.handson_delight.assembly.AssemblyRecipes;
 import com.pockyl.handson_delight.assembly.BoardDishes;
-import com.pockyl.handson_delight.mixin.MinecraftAccessor;
 import com.pockyl.handson_delight.station.BoardLogic;
 import com.pockyl.handson_delight.station.Cutting;
 import com.pockyl.handson_delight.station.CuttingBoardStation;
@@ -90,7 +86,7 @@ public final class BoardBehavior implements StationBehavior {
     private static final float BLOCK_SCALE = 0.65F;
     private static final float BLOCK_SIZE = 8.0F * BLOCK_SCALE;
     @SuppressWarnings("removal")
-    private static final ResourceLocation WHITE = ResourceLocation.fromNamespaceAndPath("minecraft", "block/white_concrete");
+    private static final Identifier WHITE = Identifier.fromNamespaceAndPath("minecraft", "block/white_concrete");
     /** The layers sink into one dish, which pops up where they were: seconds. */
     private static final float MELT_TIME = 0.28F;
     private static final float POP_TIME = 0.35F;
@@ -350,6 +346,8 @@ public final class BoardBehavior implements StationBehavior {
         wornScale = 1.0F;
         steps.clear();
         quiet = true;
+        drawnMarks = -1;
+        view.node("marks").ifPresent(node -> node.setVisible(false));
         view.node("book_open").ifPresent(node -> node.setPainter(book));
         refresh(view);
     }
@@ -377,7 +375,7 @@ public final class BoardBehavior implements StationBehavior {
             return;
         }
         CompoundTag how = new CompoundTag();
-        how.putInt(CuttingBoardStation.FROM, player.getInventory().selected);
+        how.putInt(CuttingBoardStation.FROM, player.getInventory().getSelectedSlot());
         how.putBoolean(CuttingBoardStation.BY_USE, true);
         view.sendAction(CuttingBoardStation.ACTION_PLACE, how);
     }
@@ -393,7 +391,7 @@ public final class BoardBehavior implements StationBehavior {
     @Override
     public void onStateChanged(StationView view, StationState.Changes changes) {
         // A chop drawn at once waits for its own mark only: another cook's layer or a hopper changing the board leaves it drawn.
-        int marks = view.state().data().getInt(CuttingBoardStation.MARKS);
+        int marks = view.state().data().getIntOr(CuttingBoardStation.MARKS, 0);
         if (changes.slots().contains(CuttingBoardStation.BOARD_SLOT) || marks < answeredMarks) {
             pendingChops = 0;
         } else if (marks > answeredMarks) {
@@ -486,7 +484,7 @@ public final class BoardBehavior implements StationBehavior {
             lastLayers.clear();
             layers.forEach(layer -> lastLayers.add(layer.copy()));
         }
-        boolean nowWhole = !state.data().getString(CuttingBoardStation.DISH).isEmpty();
+        boolean nowWhole = !state.data().getStringOr(CuttingBoardStation.DISH, "").isEmpty();
         if (nowWhole && !whole) {
             // The last layer went on: the stack settles into one dish, and nothing floats over it to say so.
             int count = layers.size();
@@ -550,7 +548,7 @@ public final class BoardBehavior implements StationBehavior {
         boolean block = !shownItem.isEmpty() && ItemVoxels.icon(shownItem).isEmpty();
         ToolStroke how = block ? ToolStroke.of(view.level(), shownItem, ItemStack.EMPTY) : ToolStroke.CUT;
         int marks = plan(view, shownItem).marks();
-        int done = block ? Math.min(marks, view.state().data().getInt(CuttingBoardStation.MARKS) + pendingChops) : 0;
+        int done = block ? Math.min(marks, view.state().data().getIntOr(CuttingBoardStation.MARKS, 0) + pendingChops) : 0;
         int stage = (how == ToolStroke.SMASH || how == ToolStroke.CHOP) && done > 0 ? Mth.clamp(Math.round(9.0F * done / marks), 1, 9) : 0;
         if (stage != crackStage) {
             crackStage = stage;
@@ -558,7 +556,7 @@ public final class BoardBehavior implements StationBehavior {
                 node.setVisible(stage > 0);
                 if (stage > 0) {
                     @SuppressWarnings("removal")
-                    ResourceLocation crack = ResourceLocation.withDefaultNamespace("block/destroy_stage_" + stage);
+                    Identifier crack = Identifier.withDefaultNamespace("block/destroy_stage_" + stage);
                     node.setShape(cube(4.0F + 0.1F), crack);
                 }
             });
@@ -740,7 +738,7 @@ public final class BoardBehavior implements StationBehavior {
 
     /** How Farmer's Delight turns a tool stuck into the board about the board's front, degrees: picks and hoes askew, tridents the other way. */
     private static float carvedTurn(ItemStack tool) {
-        return tool.getItem() instanceof PickaxeItem || tool.getItem() instanceof HoeItem ? 225.0F
+        return tool.is(ItemTags.PICKAXES) || tool.is(ItemTags.HOES) ? 225.0F
                 : tool.getItem() instanceof TridentItem ? 135.0F : 180.0F;
     }
 
@@ -762,7 +760,7 @@ public final class BoardBehavior implements StationBehavior {
     /** The marks cut so far on {@code stack}: what the server says and what the local hand has just done. */
     private List<ItemVoxels.Cut> cutsMade(StationView view, ItemStack stack) {
         List<ItemVoxels.Cut> cuts = new ArrayList<>();
-        int made = Math.min(plan(view, stack).marks(), view.state().data().getInt(CuttingBoardStation.MARKS) + pendingChops);
+        int made = Math.min(plan(view, stack).marks(), view.state().data().getIntOr(CuttingBoardStation.MARKS, 0) + pendingChops);
         for (int mark = 0; mark < made && !stack.isEmpty(); mark++) {
             cuts.add(mark(view, stack, mark));
         }
@@ -802,11 +800,11 @@ public final class BoardBehavior implements StationBehavior {
 
     /** The colour the game gives an item's icon (leather armour's dye), white for the rest: built from the icon, it is drawn so. */
     private static int dyed(ItemStack stack) {
-        int color = ((MinecraftAccessor) Minecraft.getInstance()).handson$itemColors().getColor(stack, 0);
+        int color = net.minecraft.world.item.component.DyedItemColor.getOrDefault(stack, -1);
         return color == -1 ? 0xFFFFFFFF : 0xFF000000 | color;
     }
 
-    private static ResourceLocation sprite(ItemStack stack) {
+    private static Identifier sprite(ItemStack stack) {
         return ItemVoxels.icon(stack).map(ItemVoxels.Icon::sprite).orElse(null);
     }
 
@@ -1119,7 +1117,7 @@ public final class BoardBehavior implements StationBehavior {
     /** How {@code stack} is cut, read again only when another item lies there. */
     private Cutting.Plan plan(StationView view, ItemStack stack) {
         if (stack.isEmpty()) {
-            return new Cutting.Plan(1, Cutting.Style.ACROSS);
+            return new Cutting.Plan(0, Cutting.Style.ACROSS);
         }
         if (planned == null || planned.getItem() != stack.getItem()) {
             planned = stack.copyWithCount(1);
@@ -1134,11 +1132,11 @@ public final class BoardBehavior implements StationBehavior {
      */
     private ItemVoxels.Cut mark(StationView view, ItemStack stack, int mark) {
         CompoundTag data = view.state().data();
-        ListTag spots = data.getList(CuttingBoardStation.SPOTS, Tag.TAG_FLOAT);
-        ListTag angles = data.getList(CuttingBoardStation.ANGLES, Tag.TAG_FLOAT);
+        ListTag spots = data.getListOrEmpty(CuttingBoardStation.SPOTS);
+        ListTag angles = data.getListOrEmpty(CuttingBoardStation.ANGLES);
         Cutting.Plan plan = plan(view, stack);
-        float spot = mark < spots.size() ? spots.getFloat(mark) : (mark + 1.0F) / (plan.marks() + 1.0F);
-        return line(stack, plan.style(), spot, mark < angles.size() ? angles.getFloat(mark) : 0.0F);
+        float spot = mark < spots.size() ? spots.getFloatOr(mark, 0.0F) : (mark + 1.0F) / (plan.marks() + 1.0F);
+        return line(stack, plan.style(), spot, mark < angles.size() ? angles.getFloatOr(mark, 0.0F) : 0.0F);
     }
 
     /** How far a mark across a long item leans from square at most: a fish is cut in steaks, never along its spine. */
@@ -1164,7 +1162,10 @@ public final class BoardBehavior implements StationBehavior {
 
     /** The mark to cut next, -1 when none: what the server says is cut and what the local hand has just done. */
     private int nextMark(StationView view) {
-        int next = view.state().data().getInt(CuttingBoardStation.MARKS) + pendingChops;
+        if (shownItem.isEmpty()) {
+            return -1;
+        }
+        int next = view.state().data().getIntOr(CuttingBoardStation.MARKS, 0) + pendingChops;
         return next < plan(view, shownItem).marks() ? next : -1;
     }
 
@@ -1175,6 +1176,11 @@ public final class BoardBehavior implements StationBehavior {
     private void drawMarks(StationView view, boolean shown, float dt) {
         NodeView node = view.node("marks").orElse(null);
         if (node == null) {
+            return;
+        }
+        if (shownItem.isEmpty()) {
+            node.setVisible(false);
+            drawnMarks = 0;
             return;
         }
         int next = shown ? nextMark(view) : -1;
@@ -1269,7 +1275,7 @@ public final class BoardBehavior implements StationBehavior {
         if (!BoardLogic.layers(state).isEmpty()) {
             // A left click finishes the dish the layers make; a right click, or a click on layers that make none yet, takes the top
             // one back, as a right click takes back food.
-            boolean ready = !state.data().getString(CuttingBoardStation.DISH).isEmpty() && click.button() == 0;
+            boolean ready = !state.data().getStringOr(CuttingBoardStation.DISH, "").isEmpty() && click.button() == 0;
             view.sendAction(ready ? CuttingBoardStation.ACTION_ASSEMBLE : CuttingBoardStation.ACTION_TAKE, new CompoundTag());
             return;
         }
@@ -1373,15 +1379,15 @@ public final class BoardBehavior implements StationBehavior {
     }
 
     @Override
-    public void onEffect(StationView view, ResourceLocation effect, String node, CompoundTag data) {
+    public void onEffect(StationView view, Identifier effect, String node, CompoundTag data) {
         if (CuttingBoardStation.EFFECT_CHOPPED.equals(effect)) {
             chopped(view, data);
         } else if (CuttingBoardStation.EFFECT_PLACED.equals(effect)) {
             // Each layer a little higher: the dish grows.
-            float pitch = data.contains(CuttingBoardStation.AT) ? 1.15F + 0.05F * data.getInt(CuttingBoardStation.AT) : 1.0F;
+            float pitch = data.contains(CuttingBoardStation.AT) ? 1.15F + 0.05F * data.getIntOr(CuttingBoardStation.AT, 0) : 1.0F;
             view.playSound(FarmersDelightContent.BOARD_PLACE, "surface", 0.7F, pitch);
         } else if (CuttingBoardStation.EFFECT_REFUSED.equals(effect)) {
-            ItemStack refused = ItemStack.parseOptional(view.level().registryAccess(), data.getCompound(CuttingBoardStation.STACK));
+            ItemStack refused = com.pockyl.handson_delight.Nbt26.parseOptional(view.level().registryAccess(), data.getCompoundOrEmpty(CuttingBoardStation.STACK));
             if (!refused.isEmpty()) {
                 bounced(view, refused);
             }
@@ -1392,24 +1398,24 @@ public final class BoardBehavior implements StationBehavior {
             }
             view.playSound(SoundEvents.WOOD_HIT, "surface", 0.4F, 1.4F);
         } else if (CuttingBoardStation.EFFECT_TAKEN.equals(effect)) {
-            ItemStack taken = ItemStack.parseOptional(view.level().registryAccess(), data.getCompound(CuttingBoardStation.STACK));
-            if (!taken.isEmpty() && data.getBoolean(CuttingBoardStation.CARVED)) {
+            ItemStack taken = com.pockyl.handson_delight.Nbt26.parseOptional(view.level().registryAccess(), data.getCompoundOrEmpty(CuttingBoardStation.STACK));
+            if (!taken.isEmpty() && data.getBooleanOr(CuttingBoardStation.CARVED, false)) {
                 pulledOut(view, taken);
             } else if (!taken.isEmpty()) {
-                taken(view, taken, data.getInt(CuttingBoardStation.AT));
+                taken(view, taken, data.getIntOr(CuttingBoardStation.AT, 0));
             }
         } else if (CuttingBoardStation.EFFECT_CARVED.equals(effect)) {
             view.playSound(FarmersDelightContent.BOARD_CARVE, "surface", 1.0F, 0.8F);
         } else if (CuttingBoardStation.EFFECT_ASSEMBLED.equals(effect)) {
             List<ItemStack> made = new ArrayList<>();
-            ListTag layers = data.getList(CuttingBoardStation.LAYERS, Tag.TAG_COMPOUND);
+            ListTag layers = data.getListOrEmpty(CuttingBoardStation.LAYERS);
             for (int i = 0; i < layers.size(); i++) {
-                made.add(ItemStack.parseOptional(view.level().registryAccess(), layers.getCompound(i)));
+                made.add(com.pockyl.handson_delight.Nbt26.parseOptional(view.level().registryAccess(), layers.getCompoundOrEmpty(i)));
             }
-            assembled(view, finish(data.getString(CuttingBoardStation.FINISH)), made);
+            assembled(view, finish(data.getStringOr(CuttingBoardStation.FINISH, "")), made);
             book.statsChanged();
         } else if (CuttingBoardStation.EFFECT_BOOK.equals(effect)) {
-            BoardBook.received(data.getList(CuttingBoardStation.BOOK, Tag.TAG_COMPOUND));
+            BoardBook.received(data.getListOrEmpty(CuttingBoardStation.BOOK));
         }
     }
 
@@ -1418,19 +1424,19 @@ public final class BoardBehavior implements StationBehavior {
      * crumbs of gravel); the last one sends the pieces off to the cook.
      */
     private void chopped(StationView view, CompoundTag data) {
-        ResourceLocation toolId = ResourceLocation.tryParse(data.getString(CuttingBoardStation.TOOL));
-        Item tool = toolId == null ? null : BuiltInRegistries.ITEM.get(toolId);
+        Identifier toolId = Identifier.tryParse(data.getStringOr(CuttingBoardStation.TOOL, ""));
+        Item tool = toolId == null ? null : BuiltInRegistries.ITEM.getValue(toolId);
         ItemStack worked = !shownItem.isEmpty() ? shownItem : !lastShown.isEmpty() ? lastShown : lastCut;
         ItemStack toolStack = tool == null ? ItemStack.EMPTY : new ItemStack(tool);
         ToolStroke how = ToolStroke.of(view.level(), worked, toolStack);
         List<ItemStack> results = worked.isEmpty() || toolStack.isEmpty() ? List.of()
-                : Cutting.findWith(view.level(), worked, toolStack).map(recipe -> recipe.getResults()).orElse(List.of());
+                : Cutting.findWith(view.level(), worked, toolStack).map(recipe -> com.pockyl.handson_delight.Nbt26.instantiateAll(recipe.getResults())).orElse(List.of());
         boolean block = !worked.isEmpty() && ItemVoxels.icon(worked).isEmpty();
         int color = worked.isEmpty() ? 0xFFE0D0A0 : 0xFF000000 | FoodColors.main(worked);
-        float x = data.contains(CuttingBoardStation.AT_X) ? data.getFloat(CuttingBoardStation.AT_X) : middleX;
+        float x = data.contains(CuttingBoardStation.AT_X) ? data.getFloatOr(CuttingBoardStation.AT_X, 0.0F) : middleX;
         float top = TOP + (block ? BLOCK_SIZE : ITEM_SIZE / 16.0F);
-        Vector3f at = new Vector3f(x, top, data.getFloat(CuttingBoardStation.AT));
-        boolean done = data.getBoolean(CuttingBoardStation.DONE);
+        Vector3f at = new Vector3f(x, top, data.getFloatOr(CuttingBoardStation.AT, 0.0F));
+        boolean done = data.getBooleanOr(CuttingBoardStation.DONE, false);
         // Bits of what is worked, not drops: a splash in the food's colour read as green water off a cabbage.
         switch (how) {
             case CUT -> view.spawnParticles(DiegesisParticles.DUST, at, new Vector3f(0.0F, 4.0F, 0.0F), 1.2F, 4, color);
@@ -1464,7 +1470,7 @@ public final class BoardBehavior implements StationBehavior {
                 // Split where it was really cut: the first cut as last seen, the last one now.
                 Cutting.Plan cut = Cutting.plan(view.level(), lastCut);
                 List<ItemVoxels.Cut> spread = new ArrayList<>(lastCuts.subList(0, Math.min(lastCuts.size(), cut.marks() - 1)));
-                spread.add(line(lastCut, cut.style(), data.getFloat(CuttingBoardStation.SPOT), data.getFloat(CuttingBoardStation.ANGLE)));
+                spread.add(line(lastCut, cut.style(), data.getFloatOr(CuttingBoardStation.SPOT, 0.0F), data.getFloatOr(CuttingBoardStation.ANGLE, 0.0F)));
                 gone.setShape(ItemVoxels.build(ItemVoxels.icon(lastCut).get(), ITEM_SIZE, spread, GAP * 1.6F), sprite(lastCut));
                 gone.setTint(dyed(lastCut));
                 gone.setVisible(true);
@@ -1503,7 +1509,7 @@ public final class BoardBehavior implements StationBehavior {
     private static SoundEvent strokeSound(ToolStroke how, Item tool, ItemStack worked, List<ItemStack> results) {
         return switch (how) {
             case CUT -> chopSound(tool);
-            case STRIP -> SoundEvents.AXE_STRIP;
+            case STRIP -> SoundEvents.AXE_STRIP.value();
             case SNIP -> SoundEvents.SHEEP_SHEAR;
             default -> material(worked, results).getHitSound();
         };
@@ -2072,11 +2078,14 @@ public final class BoardBehavior implements StationBehavior {
     }
 
     private static SoundEvent chopSound(Item tool) {
-        if (tool instanceof AxeItem) {
-            return SoundEvents.AXE_STRIP;
-        }
-        if (tool instanceof ShovelItem) {
-            return SoundEvents.SHOVEL_FLATTEN;
+        if (tool != null) {
+            ItemStack stack = new ItemStack(tool);
+            if (stack.is(ItemTags.AXES)) {
+                return SoundEvents.AXE_STRIP.value();
+            }
+            if (stack.is(ItemTags.SHOVELS)) {
+                return SoundEvents.SHOVEL_FLATTEN.value();
+            }
         }
         return FarmersDelightContent.KNIFE_CUT;
     }
